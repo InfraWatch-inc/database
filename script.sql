@@ -1,9 +1,9 @@
-CREATE DATABASE IF EXISTS infrawatch;
-USE infrawach;
+CREATE DATABASE IF NOT EXISTS infrawatch;
+USE infrawatch;
 
 --------GESTÃO DE EMPRESA E COLABORADORES---------
 
-CREATE TABLE Empresa (
+CREATE TABLE IF NOT EXISTS Empresa (
     idEmpresa INT PRIMARY KEY AUTO_INCREMENT,
     razaoSocial VARCHAR(60) NOT NULL,
     numeroTin VARCHAR(12),
@@ -14,7 +14,7 @@ CREATE TABLE Empresa (
 );
 
 
-CREATE TABLE Endereco (
+CREATE TABLE IF NOT EXISTS Endereco (
     idEndereco INT PRIMARY KEY AUTO_INCREMENT,
     cep VARCHAR(12),
     logradouro VARCHAR(60) NOT NULL,
@@ -27,14 +27,14 @@ CREATE TABLE Endereco (
 );
 
 
-CREATE TABLE Cargo (
+CREATE TABLE IF NOT EXISTS Cargo (
     idCargo INT PRIMARY KEY AUTO_INCREMENT,
     nome VARCHAR(45) NOT NULL,
     descricao TEXT
 )
 
-CREATE TABLE Colaborador (
-    idColaborador,
+CREATE TABLE IF NOT EXISTS Colaborador (
+    idColaborador INT PRIMARY KEY AUTO_INCREMENT,
     nome VARCHAR(60) NOT NULL,
     email VARCHAR(80) NOT NULL UNIQUE,
     documento VARCHAR(15) NOT NULL UNIQUE,
@@ -55,7 +55,7 @@ CREATE TABLE Colaborador (
 
 
 
-CREATE TABLE Servidor (
+CREATE TABLE IF NOT EXISTS Servidor (
     idServidor INT PRIMARY KEY AUTO_INCREMENT,
     tagName VARCHAR(45) NOT NULL,
     tipo ENUM('nuvem', 'fisico'),
@@ -68,16 +68,16 @@ CREATE TABLE Servidor (
 );
 
 
-CREATE TABLE Componente (
+CREATE TABLE IF NOT EXISTS Componente (
     idComponente INT NOT NULL,
-    fkServidor INT NOT NUL,
+    fkServidor INT NOT NULL,
     nome VARCHAR(45) NOT NULL,
     descricao TEXT,
     CONSTRAINT pkComponente PRIMARY KEY (idComponente, fkServidor),
     FOREIGN KEY (fkServidor) REFERENCES Servidor(idServidor)
 );
 
-CREATE TABLE opcaoMonitoramento (
+CREATE TABLE IF NOT EXISTS opcaoMonitoramento (
     idOpcaoMonitoramento INT PRIMARY KEY AUTO_INCREMENT,
     nome VARCHAR(45) NOT NULL,
     unidadeMedida VARCHAR(45) NOT NULL,
@@ -85,7 +85,7 @@ CREATE TABLE opcaoMonitoramento (
 );
 
 
-CREATE TABLE Config (
+CREATE TABLE IF NOT EXISTS Config (
     fkComponente INT NOT NULL,
     fkOpcaoMonitoramento INT NOT NULL,
     fkServidor INT NOT NULL,
@@ -97,7 +97,7 @@ CREATE TABLE Config (
 );
 
 
-CREATE TABLE Alerta (
+CREATE TABLE IF NOT EXISTS Alerta (
     idAlerta INT PRIMARY KEY AUTO_INCREMENT,
     fkComponente INT NOT NULL,
     fkOpcaoMonitoramento INT NOT NULL,
