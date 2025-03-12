@@ -1,3 +1,5 @@
+DROP DATABASE IF EXISTS infrawatch;
+
 CREATE DATABASE IF NOT EXISTS infrawatch;
 USE infrawatch;
 
