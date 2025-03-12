@@ -62,19 +62,21 @@ CREATE TABLE IF NOT EXISTS Servidor (
     tagName VARCHAR(45) NOT NULL,
     tipo ENUM('nuvem', 'fisico'),
     uuidPlacaMae VARCHAR(45) NOT NULL UNIQUE,
-    idInstancia VARCHAR(45) NOT NULL UNIQUE,
-    status ENUM('ativo', 'inativo'),
+    idInstancia VARCHAR(45) UNIQUE,
+    status ENUM('ativo', 'inativo') DEFAULT 'ativo',
     dtCadastro TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    SO VARCHAR(45) NOT NULL,
     fkEmpresa INT,
     FOREIGN KEY (fkEmpresa) REFERENCES Empresa(idEmpresa)
 );
 
 
 CREATE TABLE IF NOT EXISTS Componente (
-    idComponente INT NOT NULL,
+    idComponente INT AUTO_INCREMENT,
     fkServidor INT NOT NULL,
     nome VARCHAR(45) NOT NULL,
     descricao TEXT,
+    tipoComponente VARCHAR(45) NOT NULL,
     CONSTRAINT pkComponente PRIMARY KEY (idComponente, fkServidor),
     FOREIGN KEY (fkServidor) REFERENCES Servidor(idServidor)
 );
@@ -112,3 +114,8 @@ CREATE TABLE IF NOT EXISTS Alerta (
 );
 
 
+INSERT INTO Empresa (razaoSocial, numeroTin, status, telefone, site, pais) VALUES ('Empresa 1', '123456789', 'ativo', '123456789', 'www.empresa1.com', 'BR');
+INSERT INTO OpcaoMonitoramento (nome, unidadeMedida, descricao) VALUES ('CPU', 'Porcentagem', 'Uso da CPU');
+INSERT INTO OpcaoMonitoramento (nome, unidadeMedida, descricao) VALUES ('RAM', 'Porcentagem', 'Uso da Memória RAM');
+INSERT INTO OpcaoMonitoramento (nome, unidadeMedida, descricao) VALUES ('GPU', 'Porcentagem', 'Uso da GPU');
+INSERT INTO OpcaoMonitoramento (nome, unidadeMedida, descricao) VALUES ('GPU', 'Porcentagem', 'Uso da VRAM');
