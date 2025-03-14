@@ -74,7 +74,7 @@ CREATE TABLE IF NOT EXISTS Servidor (
 CREATE TABLE IF NOT EXISTS Componente (
     idComponente INT AUTO_INCREMENT,
     fkServidor INT NOT NULL,
-    nome VARCHAR(45) NOT NULL,
+    nome VARCHAR(80) NOT NULL,
     descricao TEXT,
     tipoComponente VARCHAR(45) NOT NULL,
     CONSTRAINT pkComponente PRIMARY KEY (idComponente, fkServidor),
