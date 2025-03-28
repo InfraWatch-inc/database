@@ -3,16 +3,21 @@ DROP DATABASE IF EXISTS infrawatch;
 CREATE DATABASE IF NOT EXISTS infrawatch;
 USE infrawatch;
 
---------GESTÃO DE EMPRESA E COLABORADORES---------
+-- VITÓRIA EU JA VOU ADIANTAR PARTE DA MODELAGEM AQ EM RELACAO ÁS TABELAS E ATRIBUTOS
+-- VOCE VAI TER QUE LIGAR AS FK's, ADD OS CHECKS E GERAR ALGUNS INSERTS 
+-- PODE SER QUE EU JÁ TENHA MUDADO ISSO EM ALGUMAS PARTES
+
+--------EMPRESA E COLABORADORES---------
 
 CREATE TABLE IF NOT EXISTS Empresa (
     idEmpresa INT PRIMARY KEY AUTO_INCREMENT,
     razaoSocial VARCHAR(60) NOT NULL,
     numeroTin VARCHAR(12),
-    status ENUM('ativo', 'inativo'),
+    status ENUM('ativo', 'inativo'), -- fala se a empresa ta ativa ou não
     telefone VARCHAR(15),
     site VARCHAR(200),
-    pais CHAR(2)
+    pais CHAR(2),
+    fkEndereco NOT NULL
 );
 
 
@@ -20,20 +25,13 @@ CREATE TABLE IF NOT EXISTS Endereco (
     idEndereco INT PRIMARY KEY AUTO_INCREMENT,
     cep VARCHAR(12),
     logradouro VARCHAR(60) NOT NULL,
-    numero INT,
+    numero INT NOT NULL,
     bairro VARCHAR(45) NOT NULL,
     cidade VARCHAR(45) NOT NULL,
     estado CHAR(3) NOT NULL,
-    idEmpresa INT NOT NULL UNIQUE,
-    FOREIGN KEY (idEmpresa) REFERENCES Empresa(idEmpresa)
+    fkEmpresa INT NOT NULL UNIQUE,
+    FOREIGN KEY (fkEmpresa) REFERENCES Empresa(idEmpresa)
 );
-
-
-CREATE TABLE IF NOT EXISTS Cargo (
-    idCargo INT PRIMARY KEY AUTO_INCREMENT,
-    nome VARCHAR(45) NOT NULL,
-    descricao TEXT
-)
 
 CREATE TABLE IF NOT EXISTS Colaborador (
     idColaborador INT PRIMARY KEY AUTO_INCREMENT,
@@ -44,29 +42,26 @@ CREATE TABLE IF NOT EXISTS Colaborador (
     senha TEXT NOT NULL,
     dtCadastro TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     fkResponsavel INT,
-    fkCargo INT,
-    fkEmpresa INT,
+    fkEmpresa INT NOT NULL,
+    cargo VARCHAR(45) NOT NULL,
+    nivel TINYINT NOT NULL,
     FOREIGN KEY (fkResponsavel) REFERENCES Colaborador(idColaborador),
-    FOREIGN KEY (fkCargo) REFERENCES Cargo(idCargo),
     FOREIGN KEY (fkEmpresa) REFERENCES Empresa(idEmpresa)
 );
 
-
-
---------GESTÃO DE SERVIDORES E ALERTAS---------
-
-
+-----------SERVIDORES------------
 
 CREATE TABLE IF NOT EXISTS Servidor (
     idServidor INT PRIMARY KEY AUTO_INCREMENT,
     tagName VARCHAR(45) NOT NULL,
-    tipo ENUM('nuvem', 'fisico'),
+    tipo ENUM('nuvem', 'fisico') NOT NULL,
     uuidPlacaMae VARCHAR(45) NOT NULL UNIQUE,
     idInstancia VARCHAR(45) UNIQUE,
-    status ENUM('ativo', 'inativo') DEFAULT 'ativo',
+    status ENUM('ativo', 'inativo') NOT NULL DEFAULT 'ativo',
     dtCadastro TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    SO VARCHAR(45) NOT NULL,
-    fkEmpresa INT,
+    sistemaOperacional VARCHAR(45) NOT NULL,
+    fkEmpresa INT NOT NULL,
+    fkEndereco INT, -- nn add a referencia 
     FOREIGN KEY (fkEmpresa) REFERENCES Empresa(idEmpresa)
 );
 
@@ -74,34 +69,22 @@ CREATE TABLE IF NOT EXISTS Servidor (
 CREATE TABLE IF NOT EXISTS Componente (
     idComponente INT AUTO_INCREMENT,
     fkServidor INT NOT NULL,
-    nome VARCHAR(80) NOT NULL,
-    descricao TEXT,
-    tipoComponente VARCHAR(45) NOT NULL,
-    CONSTRAINT pkComponente PRIMARY KEY (idComponente, fkServidor),
+    componente VARCHAR(45) NOT NULL,
+    marca VaRCHAR(45) NOT NULL,
+    numeracao TINYINT NOT NULL,
+    modelo VARCHAR(45) NOT NULL,
     FOREIGN KEY (fkServidor) REFERENCES Servidor(idServidor)
 );
 
-CREATE TABLE IF NOT EXISTS opcaoMonitoramento (
+CREATE TABLE IF NOT EXISTS ConfiguracaoMonitoramento ( -- FAZ ESSA TABELA PRA MIM HEHE
     idOpcaoMonitoramento INT PRIMARY KEY AUTO_INCREMENT,
     nome VARCHAR(45) NOT NULL,
     unidadeMedida VARCHAR(45) NOT NULL,
     descricao TEXT
 );
 
-
-CREATE TABLE IF NOT EXISTS Config (
-    fkComponente INT NOT NULL,
-    fkOpcaoMonitoramento INT NOT NULL,
-    fkServidor INT NOT NULL,
-    limite INT NOT NULL,
-    CONSTRAINT pkConfig PRIMARY KEY (fkComponente, fkOpcaoMonitoramento, fkServidor),
-    FOREIGN KEY (fkComponente) REFERENCES Componente(idComponente),
-    FOREIGN KEY (fkOpcaoMonitoramento) REFERENCES opcaoMonitoramento(idOpcaoMonitoramento),
-    FOREIGN KEY (fkServidor) REFERENCES Servidor(idServidor)
-);
-
-
-CREATE TABLE IF NOT EXISTS Alerta (
+----------------AMBIENTE CAPTURAS-----------------
+CREATE TABLE IF NOT EXISTS captura_serrvidor_1 ( -- FAZ A TABELA DE CAPTURA E APERTA TBM PFVR TMJ
     idAlerta INT PRIMARY KEY AUTO_INCREMENT,
     fkComponente INT NOT NULL,
     fkOpcaoMonitoramento INT NOT NULL,
