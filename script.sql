@@ -111,23 +111,32 @@ CREATE TABLE IF NOT EXISTS Alerta(
 #----------------AMBIENTE CAPTURAS-----------------
 
 CREATE TABLE IF NOT EXISTS captura_servidor_1 (
-	cpu1_freq_uso FLOAT,
-	cpu1_percent_uso FLOAT,
-    ram1_uso FLOAT,
-	ram1_percent_uso FLOAT,
-	hd_uso FLOAT,
-	gpu1_uso FLOAT,
+	cpu1_frequencia FLOAT,
+	cpu1_uso_porcentagem FLOAT,
+    ram1_uso_byte FLOAT,
+	ram1_uso_porcentagem FLOAT,
+	hd1_uso_porcentagem FLOAT,
+	gpu1_uso_porcentagem FLOAT,
 	gpu1_temperatura FLOAT,
-	disco2_percent_uso FLOAT,
+	disco2_uso_porcentagem FLOAT,
 	disco2_uso_byte FLOAT,
+    isAlerta TINYINT, -- 0 = false, 1 = true
+    CONSTRAINT temAlerta CHECK (nivel IN (0, 1)),
     dtHora DATETIME
 );
 
 CREATE TABLE IF NOT EXISTS captura_servidor_2 (
-	cpu1_freq_uso FLOAT,
-	cpu1_percent_uso FLOAT,
-	gpu1_uso FLOAT,
+	cpu1_frequencia FLOAT,
+	cpu1_uso_porcentagem FLOAT,
+    ram1_uso_byte FLOAT,
+	ram1_uso_porcentagem FLOAT,
+	hd1_uso_porcentagem FLOAT,
+	gpu1_uso_porcentagem FLOAT,
 	gpu1_temperatura FLOAT,
+	disco2_uso_porcentagem FLOAT,
+	disco2_uso_byte FLOAT,
+    isAlerta TINYINT, -- 0 = false, 1 = true
+    CONSTRAINT temAlerta CHECK (nivel IN (0, 1)),
     dtHora DATETIME
 );
 
@@ -143,24 +152,36 @@ INSERT INTO Empresa (razaoSocial, numeroTin, status, telefone, site, pais, fkEnd
 
 INSERT INTO Servidor (tagName, tipo, uuidPlacaMae, idInstancia, SO, fkEmpresa, fkEndereco) VALUES
 ('SRV-001', 'fisico', '1234-5678-9101', 'inst-001', 'Linux', 1, 1),
-('SRV-002', 'nuvem', '5678-9101-1234', 'inst-002', 'Windows', 2, 2);
+('SRV-002', 'nuvem', 'NBQ5911005111817C8MX00', 'inst-002', 'Windows', 2, 2);
 
 INSERT INTO Componente (fkServidor, componente, marca, numeracao, modelo) VALUES
 (1, 'CPU', 'Intel', 1, 'i7-9700K'),
-(1, 'RAM', 'Corsair', 2, 'Vengeance 16GB'),
+(1, 'RAM', 'Corsair', 1, 'Vengeance 16GB'),
 (1, 'HD', 'Seagate', 1, '1TB'),
-(2, 'GPU', 'NVIDIA', 1, 'RTX 3080'),
-(2, 'Disco', 'Samsung', 1, 'SSD 1TB');
+(1, 'GPU', 'NVIDIA', 1, 'RTX 3080'),
+(1, 'Disco', 'Samsung', 2, 'SSD 1TB'),
+(2, 'CPU', 'Intel', 1, 'i5-9700K'),
+(2, 'RAM', 'Husky', 1, 'DDR4 16GB'),
+(2, 'HD', 'Seagate', 1, '1TB'),
+(2, 'GPU', 'NVIDIA', 1, 'GTX 1050'),
+(2, 'Disco', 'Adata', 2, 'SSD 500GB');
 
 INSERT INTO ConfiguracaoMonitoramento (nome, unidadeMedida, descricao, fkComponente, limiteAtencao, limiteCritico, funcaoPython) VALUES
-('CPU', 'Porcentagem', 'Uso da CPU', 1, 80.0, 95.0, 'psutil.cpu_percent()'),
-('CPU', 'MHz', 'Frequência da CPU', 1, 2000.0, 4000.0, 'psutil.cpu_freq().current'),
-('RAM', 'Porcentagem', 'Uso da Memória RAM', 2, 75.0, 90.0, 'psutil.virtual_memory().percent'),
-('RAM', 'Byte', 'Uso da Memória RAM', 2, 8000000000, 16000000000, 'psutil.virtual_memory().used'),
-('HD', 'Porcentagem', 'Uso do HD', 3, 85.0, 95.0, 'psutil.disk_usage("/").percent'),
-('GPU', 'Porcentagem', 'Uso da GPU', 4, 70.0, 90.0, 'round(GPUtil.getGPUs()[numeracao - 1].load * 100, 2)'),
-('GPU', 'Celsius', 'Temperatura da GPU', 4, 60.0, 90.0, 'GPUtil.getGPUs()[numeracao -1].temperature'),
-('Disco', 'Porcentagem', 'Uso do Disco', 5, 80.0, 95.0, 'psutil.disk_usage("/").percent'),
-('Disco', 'Byte', 'Uso do Disco', 5, 500000000000, 1000000000000, 'psutil.disk_usage("/").used');
-
-
+('CPU', '%', 'Uso', 1, 80.0, 95.0, 'psutil.cpu_percent()'),
+('CPU', 'MHz', 'Frequência', 1, 2000.0, 4000.0, 'psutil.cpu_freq().current'),
+('RAM', '%', 'Uso', 2, 75.0, 90.0, 'psutil.virtual_memory().percent'),
+('RAM', 'Byte', 'Uso Byte', 2, 8000000000, 16000000000, 'psutil.virtual_memory().used'),
+('HD', '%', 'Uso Porcentagem', 3, 85.0, 95.0, 'psutil.disk_usage("/").percent'),
+('GPU', '%', 'Uso Porcentagem', 4, 70.0, 90.0, 'round(GPUtil.getGPUs()[numeracao - 1].load * 100, 2)'),
+('GPU', 'ºC', 'Temperatura', 4, 60.0, 90.0, 'GPUtil.getGPUs()[numeracao -1].temperature'),
+('Disco', '%', 'Uso Porcentagem', 5, 80.0, 95.0, 'psutil.disk_usage("/").percent'),
+('Disco', 'Byte', 'Uso Byte', 5, 500000000000, 1000000000000, 'psutil.disk_usage("/").used'),
+('CPU', '%', 'Uso Porcentagem', 6, 80.0, 95.0, 'psutil.cpu_percent()'),
+('CPU', 'MHz', 'Frequência', 6, 2000.0, 4000.0, 'psutil.cpu_freq().current'),
+('RAM', '%', 'Uso Porcentagem', 7, 75.0, 90.0, 'psutil.virtual_memory().percent'),
+('RAM', 'Byte', 'Uso Byte', 7, 8000000000, 16000000000, 'psutil.virtual_memory().used'),
+('HD', '%', 'Uso Porcentagem', 8, 85.0, 95.0, 'psutil.disk_usage("/").percent'),
+('GPU', '%', 'Uso Porcentagem', 9, 70.0, 90.0, 'round(GPUtil.getGPUs()[numeracao - 1].load * 100, 2)'),
+('GPU', 'ºC', 'Temperatura', 9, 60.0, 90.0, 'GPUtil.getGPUs()[numeracao -1].temperature'),
+('Disco', '%', 'Uso Porcentagem', 10, 80.0, 95.0, 'psutil.disk_usage("/").percent'),
+('Disco', 'Byte', 'Uso Byte', 10, 500000000000, 1000000000000, 'psutil.disk_usage("/").used');
