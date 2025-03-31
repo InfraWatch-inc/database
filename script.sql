@@ -79,7 +79,7 @@ CREATE TABLE IF NOT EXISTS Componente (
 );
 
 CREATE TABLE IF NOT EXISTS ConfiguracaoMonitoramento ( 
-    idOpcaoMonitoramento INT PRIMARY KEY AUTO_INCREMENT,
+    idConfiguracaoMonitoramento INT PRIMARY KEY AUTO_INCREMENT,
     nome VARCHAR(45) NOT NULL,
     unidadeMedida VARCHAR(45) NOT NULL,
     descricao TEXT,
@@ -89,6 +89,23 @@ CREATE TABLE IF NOT EXISTS ConfiguracaoMonitoramento (
     funcaoPython VARCHAR(70) NOT NULL,
 	FOREIGN KEY (fkComponente) REFERENCES Componente(idComponente)
     
+);
+
+#---------------MONITORAMENTO---------------------
+CREATE TABLE IF NOT EXISTS Captura(
+    idCaptura INT PRIMARY KEY AUTO_INCREMENT,
+    dadoCaptura FLOAT NOT NULL,
+    dataHora DATETIME NOT NULL DEFAULT now(),
+    fkConfiguracaoMonitoramento INT NOT NULL,
+    FOREIGN KEY (fkConfiguracaoMonitoramento) REFERENCES ConfiguracaoMonitoramento(idConfiguracaoMonitoramento)
+);
+
+CREATE TABLE IF NOT EXISTS Alerta(
+    idAlerta INT PRIMARY KEY AUTO_INCREMENT,
+    nivel TINYINT NOT NULL, -- 1: Atenção, 2: Crítico
+    fkCaptura INT NOT NULL,
+    FOREIGN KEY (fkCaptura) REFERENCES Captura(idCaptura),
+    CONSTRAINT chkNivelAlerta CHECK (nivel IN (1, 2))
 );
 
 #----------------AMBIENTE CAPTURAS-----------------
@@ -135,7 +152,6 @@ INSERT INTO Componente (fkServidor, componente, marca, numeracao, modelo) VALUES
 (2, 'GPU', 'NVIDIA', 1, 'RTX 3080'),
 (2, 'Disco', 'Samsung', 1, 'SSD 1TB');
 
-#GPUtil.getGPUs() ele pega tudo da gpu e depois você escolhe oq vc quer pegar fi
 INSERT INTO ConfiguracaoMonitoramento (nome, unidadeMedida, descricao, fkComponente, limiteAtencao, limiteCritico, funcaoPython) VALUES
 ('CPU', 'Porcentagem', 'Uso da CPU', 1, 80.0, 95.0, 'psutil.cpu_percent()'),
 ('CPU', 'MHz', 'Frequência da CPU', 1, 2000.0, 4000.0, 'psutil.cpu_freq().current'),
@@ -143,9 +159,8 @@ INSERT INTO ConfiguracaoMonitoramento (nome, unidadeMedida, descricao, fkCompone
 ('RAM', 'Byte', 'Uso da Memória RAM', 2, 8000000000, 16000000000, 'psutil.virtual_memory().used'),
 ('HD', 'Porcentagem', 'Uso do HD', 3, 85.0, 95.0, 'psutil.disk_usage("/").percent'),
 ('GPU', 'Porcentagem', 'Uso da GPU', 4, 70.0, 90.0, 'round(GPUtil.getGPUs()[numeracao - 1].load * 100, 2)'),
-('GPU', 'Celsius', 'Temperatura da GPU', 4, 60.0, 90.0, 'GPUtil.getGPUs()[numeracao -1].temperature'), # talvez seja gpu.temperature mas não sei se ta correto
+('GPU', 'Celsius', 'Temperatura da GPU', 4, 60.0, 90.0, 'GPUtil.getGPUs()[numeracao -1].temperature'),
 ('Disco', 'Porcentagem', 'Uso do Disco', 5, 80.0, 95.0, 'psutil.disk_usage("/").percent'),
 ('Disco', 'Byte', 'Uso do Disco', 5, 500000000000, 1000000000000, 'psutil.disk_usage("/").used');
-#GPUtil.getGPUs() ele pega tudo da gpu e depois você escolhe oq vc quer pegar fi
 
 
