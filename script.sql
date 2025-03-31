@@ -142,8 +142,8 @@ INSERT INTO ConfiguracaoMonitoramento (nome, unidadeMedida, descricao, fkCompone
 ('RAM', 'Porcentagem', 'Uso da Memória RAM', 2, 75.0, 90.0, 'psutil.virtual_memory().percent'),
 ('RAM', 'Byte', 'Uso da Memória RAM', 2, 8000000000, 16000000000, 'psutil.virtual_memory().used'),
 ('HD', 'Porcentagem', 'Uso do HD', 3, 85.0, 95.0, 'psutil.disk_usage("/").percent'),
-('GPU', 'Porcentagem', 'Uso da GPU', 4, 70.0, 90.0, 'GPUtil.getGPUs()'),
-('GPU', 'Celsius', 'Temperatura da GPU', 4, 60.0, 90.0, 'GPUtil.getGPUs()'), # talvez seja gpu.temperature mas não sei se ta correto
+('GPU', 'Porcentagem', 'Uso da GPU', 4, 70.0, 90.0, 'round(GPUtil.getGPUs()[numeracao - 1].load * 100, 2)'),
+('GPU', 'Celsius', 'Temperatura da GPU', 4, 60.0, 90.0, 'GPUtil.getGPUs()[numeracao -1].temperature'), # talvez seja gpu.temperature mas não sei se ta correto
 ('Disco', 'Porcentagem', 'Uso do Disco', 5, 80.0, 95.0, 'psutil.disk_usage("/").percent'),
 ('Disco', 'Byte', 'Uso do Disco', 5, 500000000000, 1000000000000, 'psutil.disk_usage("/").used');
 #GPUtil.getGPUs() ele pega tudo da gpu e depois você escolhe oq vc quer pegar fi
