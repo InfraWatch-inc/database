@@ -45,8 +45,11 @@ CREATE TABLE IF NOT EXISTS Colaborador (
     cargo VARCHAR(45) NOT NULL,
     nivel TINYINT NOT NULL,
     FOREIGN KEY (fkResponsavel) REFERENCES Colaborador(idColaborador),
-    FOREIGN KEY (fkEmpresa) REFERENCES Empresa(idEmpresa)
+    FOREIGN KEY (fkEmpresa) REFERENCES Empresa(idEmpresa),
+	CONSTRAINT chknivel CHECK (nivel IN (1, 2, 3))
+
 );
+
 
 #-----------SERVIDORES------------
 
@@ -144,5 +147,5 @@ INSERT INTO ConfiguracaoMonitoramento (nome, unidadeMedida, descricao, fkCompone
 ('Disco', 'Porcentagem', 'Uso do Disco', 5, 80.0, 95.0, 'psutil.disk_usage("/").percent'),
 ('Disco', 'Byte', 'Uso do Disco', 5, 500000000000, 1000000000000, 'psutil.disk_usage("/").used');
 #GPUtil.getGPUs() ele pega tudo da gpu e depois você escolhe oq vc quer pegar fi
-DROP DATABASE IF EXISTS infrawatch;
+
 
