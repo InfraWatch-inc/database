@@ -120,8 +120,8 @@ CREATE TABLE IF NOT EXISTS captura_servidor_1 (
 	gpu1_temperatura FLOAT,
 	disco2_uso_porcentagem FLOAT,
 	disco2_uso_byte FLOAT,
-    isAlerta TINYINT, -- 0 = false, 1 = true
-    CONSTRAINT temAlerta CHECK (nivel IN (0, 1)),
+    isAlerta TINYINT DEFAULT 0, -- 0 = false, 1 = true
+    CHECK (isAlerta IN (0, 1)),
     dtHora DATETIME
 );
 
@@ -135,8 +135,8 @@ CREATE TABLE IF NOT EXISTS captura_servidor_2 (
 	gpu1_temperatura FLOAT,
 	disco2_uso_porcentagem FLOAT,
 	disco2_uso_byte FLOAT,
-    isAlerta TINYINT, -- 0 = false, 1 = true
-    CONSTRAINT temAlerta CHECK (nivel IN (0, 1)),
+    isAlerta TINYINT DEFAULT 0, -- 0 = false, 1 = true
+    CHECK (isAlerta IN (0, 1)),
     dtHora DATETIME
 );
 
