@@ -120,12 +120,8 @@ CREATE TABLE IF NOT EXISTS captura_servidor_1 (
 	gpu1_temperatura FLOAT,
 	disco2_uso_porcentagem FLOAT,
 	disco2_uso_byte FLOAT,
-<<<<<<< Updated upstream
     isAlerta TINYINT DEFAULT 0, -- 0 = false, 1 = true
     CHECK (isAlerta IN (0, 1)),
-=======
-    isAlerta TINYINT,
->>>>>>> Stashed changes
     dtHora DATETIME
 );
 
@@ -172,7 +168,7 @@ INSERT INTO Componente (fkServidor, componente, marca, numeracao, modelo) VALUES
 (2, 'Disco', 'Adata', 2, 'SSD 500GB');
 
 INSERT INTO ConfiguracaoMonitoramento (nome, unidadeMedida, descricao, fkComponente, limiteAtencao, limiteCritico, funcaoPython) VALUES
-<<<<<<< Updated upstream
+
 ('CPU', '%', 'Uso', 1, 80.0, 95.0, 'psutil.cpu_percent()'),
 ('CPU', 'MHz', 'Frequência', 1, 2000.0, 4000.0, 'psutil.cpu_freq().current'),
 ('RAM', '%', 'Uso', 2, 75.0, 90.0, 'psutil.virtual_memory().percent'),
@@ -191,7 +187,7 @@ INSERT INTO ConfiguracaoMonitoramento (nome, unidadeMedida, descricao, fkCompone
 ('GPU', 'ºC', 'Temperatura', 9, 60.0, 90.0, 'GPUtil.getGPUs()[numeracao -1].temperature'),
 ('Disco', '%', 'Uso Porcentagem', 10, 80.0, 95.0, 'psutil.disk_usage("/").percent'),
 ('Disco', 'Byte', 'Uso Byte', 10, 500000000000, 1000000000000, 'psutil.disk_usage("/").used');
-=======
+
 ('CPU', 'Porcentagem', 'Uso da CPU', 1, 80.0, 95.0, 'psutil.cpu_percent()'),
 ('CPU', 'MHz', 'Frequência da CPU', 1, 2000.0, 4000.0, 'psutil.cpu_freq().current'),
 ('RAM', 'Porcentagem', 'Uso da Memória RAM', 2, 75.0, 90.0, 'psutil.virtual_memory().percent'),
@@ -229,11 +225,3 @@ FROM captura_servidor_1
 WHERE disco2_percent_uso > 80;
 
 SELECT * FROM disco2_percent_server1_1;
-
-
-
-
-
-
-
->>>>>>> Stashed changes
