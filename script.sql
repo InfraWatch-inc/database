@@ -257,7 +257,13 @@ GROUP BY Alerta.dataHora, idEmpresa;
 
 SELECT * FROM viewPrimeiroInsights WHERE dataHora < now() and idEmpresa = 1; -- Aplicar os filtros temporais do período desejado
 
--- CREATE OR REPLACE VIEW `viewInsightsComponentes` AS ;
+CREATE OR REPLACE VIEW `viewInsightsComponentes` AS 
+SELECT () as qtdComponentes,
+	   () as qtdAlertasComponente,
+       
+       () as dadosProcessos,
+       () as dadosAlertas
+FROM Alerta;
 
 CREATE OR REPLACE VIEW `viewListagemColaboradores` AS
 SELECT idColaborador as id, nome, email, cargo, documento, idEmpresa FROM Colaborador 
@@ -291,5 +297,3 @@ FROM Servidor
 JOIN Empresa ON idEmpresa = fkEmpresa;
 
 SELECT * FROM viewListagemServidores WHERE idEmpresa = 1;
-
-
