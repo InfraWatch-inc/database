@@ -179,7 +179,7 @@ INSERT INTO ConfiguracaoMonitoramento (unidadeMedida, descricao, fkComponente, l
 ('Porcentagem', 'Uso do Disco', 5, 80.0, 95.0, 'psutil.disk_usage("/").percent'),
 ('Byte', 'Uso do Disco', 5, 500000000000, 1000000000000, 'psutil.disk_usage("/").used');
 
-#---------------VIEWS---------------------
+#---------------VIEWS SISTEMA---------------------
 
 CREATE OR REPLACE VIEW `viewTempoReal` AS 
 SELECT s.idServidor,
@@ -257,13 +257,40 @@ GROUP BY Alerta.dataHora, idEmpresa;
 
 SELECT * FROM viewPrimeiroInsights WHERE dataHora < now() and idEmpresa = 1; -- Aplicar os filtros temporais do período desejado
 
-CREATE OR REPLACE VIEW `viewInsightsComponentes` AS 
-SELECT () as qtdComponentes,
-	   () as qtdAlertasComponente,
-       
-       () as dadosProcessos,
-       () as dadosAlertas
-FROM Alerta;
+CREATE OR REPLACE VIEW viewKpiInsights AS
+SELECT  
+    e.idEmpresa,
+    c.componente,
+    COUNT(DISTINCT cfg.idConfiguracaoMonitoramento) AS totalComponentesMonitorados,
+    COUNT(a.idAlerta) AS totalAlertasComponente
+
+FROM Alerta a
+JOIN ConfiguracaoMonitoramento cfg ON a.fkConfiguracaoMonitoramento = cfg.idConfiguracaoMonitoramento
+JOIN Componente c ON cfg.fkComponente = c.idComponente
+JOIN Servidor s ON cfg.fkServidor = s.idServidor
+JOIN Empresa e ON s.fkEmpresa = e.idEmpresa
+GROUP BY e.idEmpresa, c.componente;
+
+SELECT * FROM viewKpiInsights WHERE idEmpresa = 1 and c.componente = 'CPU';
+
+CREATE OR REPLACE VIEW viewInsightsProcessos AS
+SELECT 
+    nomeProcesso,
+    ROUND(AVG(usoCpu), 2) AS mediaUsoCpu,
+    ROUND(AVG(usoRam), 2) AS mediaUsoRam,
+    ROUND(AVG(usoGpu), 2) AS mediaUsoGpu
+FROM Processo
+GROUP BY nomeProcesso
+ORDER BY 
+    (AVG(usoCpu) + AVG(usoRam) + AVG(usoGpu)) DESC
+LIMIT 6;
+
+SELECT * FROM viewInsightsProcessos;
+
+CREATE OR REPLACE VIEW viewAlertasPorContexto AS
+SELECT * FROM Alerta; -- pensar bem sobre todos os filtros que podem ser aplicados aqui
+
+SELECT * FROM viewInsightsComponentes WHERE .componente = 'CPU' and idEmpresa = 1;
 
 CREATE OR REPLACE VIEW `viewListagemColaboradores` AS
 SELECT idColaborador as id, nome, email, cargo, documento, idEmpresa FROM Colaborador 
@@ -297,3 +324,14 @@ FROM Servidor
 JOIN Empresa ON idEmpresa = fkEmpresa;
 
 SELECT * FROM viewListagemServidores WHERE idEmpresa = 1;
+
+#---------------VIEWS ANÁLISES---------------------
+-- DESENVOLVER IDEALIZAÇÃO DE VIEWS PARA ANÁLISES DE DADOS, RELATÓRIOS E GRÁFICOS
+CREATE VIEW `viewCapturasServidor` AS
+SELECT * FROM Captura;
+
+CREATE VIEW `viewCapturasServidor` AS
+SELECT * FROM Captura;
+
+CREATE VIEW `viewProcessosServidor` AS
+SELECT * FROM Processos;
