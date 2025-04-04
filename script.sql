@@ -3,23 +3,22 @@ DROP DATABASE IF EXISTS infrawatch;
 CREATE DATABASE IF NOT EXISTS infrawatch;
 USE infrawatch;
 
-
 #--------EMPRESA E COLABORADORES---------
 
 CREATE TABLE IF NOT EXISTS Empresa (
     idEmpresa INT PRIMARY KEY AUTO_INCREMENT,
     razaoSocial VARCHAR(60) NOT NULL,
-    numeroTin VARCHAR(12),
-    status ENUM('ativo', 'inativo'), -- fala se a empresa ta ativa ou não
-    telefone VARCHAR(15),
-    site VARCHAR(200),
-    pais CHAR(2)
+    numeroTin VARCHAR(12) NOT NULL,
+    status VARCHAR(45) NOT NULL DEFAULT 'ativo', -- fala se a empresa ta ativa ou não
+    telefone VARCHAR(15) NOT NULL,
+    site VARCHAR(200) NOT NULL,
+    pais CHAR(2) NOT NULL,
+    CONSTRAINT chkStatus CHECK (status IN ('ativo','ativo'))
 );
-
 
 CREATE TABLE IF NOT EXISTS Endereco (
     idEndereco INT PRIMARY KEY AUTO_INCREMENT,
-    cep VARCHAR(12),
+    cep VARCHAR(12) NOT NULL,
     logradouro VARCHAR(60) NOT NULL,
     numero INT NOT NULL,
     bairro VARCHAR(45) NOT NULL,
@@ -47,9 +46,7 @@ CREATE TABLE IF NOT EXISTS Colaborador (
     FOREIGN KEY (fkResponsavel) REFERENCES Colaborador(idColaborador),
     FOREIGN KEY (fkEmpresa) REFERENCES Empresa(idEmpresa),
 	CONSTRAINT chknivel CHECK (nivel IN (1, 2, 3))
-
 );
-
 
 #-----------SERVIDORES------------
 
@@ -63,10 +60,10 @@ CREATE TABLE IF NOT EXISTS Servidor (
     dtCadastro TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     SO VARCHAR(45) NOT NULL,
     fkEmpresa INT NOT NULL,
-    fkEndereco INT, -- nn add a referencia 
-    FOREIGN KEY (fkEmpresa) REFERENCES Empresa(idEmpresa)
+    fkEndereco INT, 
+    FOREIGN KEY (fkEmpresa) REFERENCES Empresa(idEmpresa),
+    FOREIGN KEY (fkEndereco) REFERENCES Endereco(idEndereco)
 );
-
 
 CREATE TABLE IF NOT EXISTS Componente (
     idComponente INT PRIMARY KEY AUTO_INCREMENT,
@@ -92,6 +89,7 @@ CREATE TABLE IF NOT EXISTS ConfiguracaoMonitoramento (
 );
 
 #---------------MONITORAMENTO---------------------
+
 CREATE TABLE IF NOT EXISTS Captura(
     idCaptura INT PRIMARY KEY AUTO_INCREMENT,
     dadoCaptura FLOAT NOT NULL,
@@ -108,52 +106,38 @@ CREATE TABLE IF NOT EXISTS Alerta(
     CONSTRAINT chkNivelAlerta CHECK (nivel IN (1, 2))
 );
 
-#----------------AMBIENTE CAPTURAS-----------------
-
-CREATE TABLE IF NOT EXISTS captura_servidor_1 (
-	cpu1_frequencia FLOAT,
-	cpu1_uso_porcentagem FLOAT,
-    ram1_uso_byte FLOAT,
-	ram1_uso_porcentagem FLOAT,
-	hd1_uso_porcentagem FLOAT,
-	gpu1_uso_porcentagem FLOAT,
-	gpu1_temperatura FLOAT,
-	disco2_uso_porcentagem FLOAT,
-	disco2_uso_byte FLOAT,
-    isAlerta TINYINT DEFAULT 0, -- 0 = false, 1 = true
-    CHECK (isAlerta IN (0, 1)),
-    dtHora DATETIME
+CREATE TABLE IF NOT EXISTS Processo(
+	idProcesso INT PRIMARY KEY AUTO_INCREMENT,
+    pid INT NOT NULL,
+    nomeProcesso VARCHAR(45) NOT NULL,
+    usoCpu FLOAT NOT NULL,
+    usoGpu FLOAT NOT NULL,
+    usoRam FLOAT NOT NULL,
+    fkServidor INT NOT NULL,
+    FOREIGN KEY (fkServidor) REFERENCES Servidor(idServidor)
 );
 
-
-CREATE TABLE IF NOT EXISTS captura_servidor_2 (
-	cpu1_frequencia FLOAT,
-	cpu1_uso_porcentagem FLOAT,
-    ram1_uso_byte FLOAT,
-	ram1_uso_porcentagem FLOAT,
-	hd1_uso_porcentagem FLOAT,
-	gpu1_uso_porcentagem FLOAT,
-	gpu1_temperatura FLOAT,
-	disco2_uso_porcentagem FLOAT,
-	disco2_uso_byte FLOAT,
-    isAlerta TINYINT DEFAULT 0, -- 0 = false, 1 = true
-    CHECK (isAlerta IN (0, 1)),
-    dtHora DATETIME
-);
+#---------------INSERTS---------------------
 
 INSERT INTO Endereco (cep, logradouro, numero, bairro, cidade, estado, complemento) VALUES 
-('01001-000', 'Av. Paulista', 1000, 'Bela Vista', 'São Paulo', 'SP', 'Conjunto 101'),
-('20040-001', 'Rua da Assembleia', 200, 'Centro', 'Rio de Janeiro', 'RJ', 'Conjunto 5'),
-('30130-010', 'Av. Afonso Pena', 1500, 'Centro', 'Belo Horizonte', 'MG', 'Próximo à Praça Sete');
+('70000-000', 'Nguyen Van Linh', 45, 'Hai Chau', 'Da Nang', 'VN', 'Próximo ao Dragon Bridge'),
+('50670', 'Linder Höhe', 125, 'Porz', 'Colônia', 'DE', 'Próximo ao Aeroporto de Colônia-Bonn'),
+('WC2H 9JQ', 'Shaftesbury Ave', 89, 'Soho', 'Londres', 'UK', 'Próximo ao Palace Theatre');
 
-INSERT INTO Empresa (razaoSocial, numeroTin, status, telefone, site, pais, fkEndereco) VALUES
-('Tech Solutions LTDA', '123456789012', 'ativo', '(11) 98765-4321', 'https://techsolutions.com', 'BR', 1),
-('Inova Indústria S.A.', '987654321098', 'ativo', '(21) 99999-8888', NULL, 'BR', 2),
-('Comércio Global', '564738291012', 'inativo', NULL, 'https://comercioglobal.com', 'US', 3);
+INSERT INTO Empresa (razaoSocial, numeroTin, telefone, site, pais, fkEndereco) VALUES
+('iRender', '112233445566', '(11) 91234-5678', 'https://www.irender.net', 'VN', 1),
+('RebusFarm', '223344556677','(49) 98765-4321', 'https://www.rebusfarm.net', 'DE', 2),
+('GarageFarm.NET', '334455667788','(44) 99999-8888', 'https://garagefarm.net', 'UK', 3);
+
+INSERT INTO Colaborador (nome, email, documento, tipoDocumento, senha, fkEmpresa, cargo, nivel) 
+VALUES 
+('João Neto', 'joao.neto@email.com', '12345678901', 'CPF', 'senha123', 1, 'Técnico de Manutenção', 1),
+('Carlos Eduardo', 'carlos.eduardo@email.com', '23456789012', 'CPF', 'senha456', 1, 'Analista de Dados', 2),
+('Beatriz Moreira', 'beatriz.moreira@email.com', '34567890123', 'CPF', 'senha789', 1, 'COO', 3);
 
 INSERT INTO Servidor (tagName, tipo, uuidPlacaMae, idInstancia, SO, fkEmpresa, fkEndereco) VALUES
 ('SRV-001', 'fisico', '1234-5678-9101', 'inst-001', 'Linux', 1, 1),
-('SRV-002', 'nuvem', 'NBQ5911005111817C8MX00', 'inst-002', 'Windows', 2, 2);
+('SRV-002', 'nuvem', 'NBQ5911005111817C8MX00', 'inst-002', 'Windows', 1, 2);
 
 INSERT INTO Componente (fkServidor, componente, marca, numeracao, modelo) VALUES
 (1, 'CPU', 'Intel', 1, 'i7-9700K'),
@@ -168,7 +152,6 @@ INSERT INTO Componente (fkServidor, componente, marca, numeracao, modelo) VALUES
 (2, 'Disco', 'Adata', 2, 'SSD 500GB');
 
 INSERT INTO ConfiguracaoMonitoramento (nome, unidadeMedida, descricao, fkComponente, limiteAtencao, limiteCritico, funcaoPython) VALUES
-
 ('CPU', '%', 'Uso', 1, 80.0, 95.0, 'psutil.cpu_percent()'),
 ('CPU', 'MHz', 'Frequência', 1, 2000.0, 4000.0, 'psutil.cpu_freq().current'),
 ('RAM', '%', 'Uso', 2, 75.0, 90.0, 'psutil.virtual_memory().percent'),
@@ -186,8 +169,7 @@ INSERT INTO ConfiguracaoMonitoramento (nome, unidadeMedida, descricao, fkCompone
 ('GPU', '%', 'Uso Porcentagem', 9, 70.0, 90.0, 'round(GPUtil.getGPUs()[numeracao - 1].load * 100, 2)'),
 ('GPU', 'ºC', 'Temperatura', 9, 60.0, 90.0, 'GPUtil.getGPUs()[numeracao -1].temperature'),
 ('Disco', '%', 'Uso Porcentagem', 10, 80.0, 95.0, 'psutil.disk_usage("/").percent'),
-('Disco', 'Byte', 'Uso Byte', 10, 500000000000, 1000000000000, 'psutil.disk_usage("/").used');
-
+('Disco', 'Byte', 'Uso Byte', 10, 500000000000, 1000000000000, 'psutil.disk_usage("/").used'),
 ('CPU', 'Porcentagem', 'Uso da CPU', 1, 80.0, 95.0, 'psutil.cpu_percent()'),
 ('CPU', 'MHz', 'Frequência da CPU', 1, 2000.0, 4000.0, 'psutil.cpu_freq().current'),
 ('RAM', 'Porcentagem', 'Uso da Memória RAM', 2, 75.0, 90.0, 'psutil.virtual_memory().percent'),
@@ -198,30 +180,32 @@ INSERT INTO ConfiguracaoMonitoramento (nome, unidadeMedida, descricao, fkCompone
 ('Disco', 'Porcentagem', 'Uso do Disco', 5, 80.0, 95.0, 'psutil.disk_usage("/").percent'),
 ('Disco', 'Byte', 'Uso do Disco', 5, 500000000000, 1000000000000, 'psutil.disk_usage("/").used');
 
-CREATE VIEW CPU_percent_server1_1 AS 
-SELECT cpu1_percent_uso
-FROM captura_servidor_1
-WHERE cpu1_percent_uso > 90;
+#---------------VIEWS---------------------
 
-SELECT * FROM CPU_percent_server1_1;
+CREATE OR REPLACE VIEW `viewListagemColaboradores` AS
+SELECT idColaborador, nome, email, cargo, documento, idEmpresa FROM Colaborador 
+JOIN Empresa ON idEmpresa = fkEmpresa;
 
-CREATE VIEW RAM_percent_server1_1 AS 
-SELECT ram1_percent_uso
-FROM captura_servidor_1
-WHERE ram1_percent_uso > 80;
+SELECT * FROM viewListagemColaboradores WHERE idEmpresa = 1;
 
-SELECT * FROM RAM_percent_server1_1;
+CREATE OR REPLACE VIEW `viewListagemServidores` AS
+SELECT idServidor, tagName, idInstancia, idEmpresa, 
+		(SELECT COUNT(numeracao) FROM Componente as cm
+        WHERE cm.componente = 'CPU' and fkServidor = idServidor) as qtdCpu, 
+        
+        (SELECT COUNT(numeracao) FROM Componente as cm
+        WHERE cm.componente = 'GPU' and fkServidor = idServidor) as qtdGpu,
+        
+        (SELECT AVG(cp.dadoCaptura) FROM ConfiguracaoMonitoramento as cm
+        JOIN Componente as c ON fkComponente = idComponente
+        JOIN Captura as cp ON cm.idConfiguracaoMonitoramento = cp.idCaptura
+        WHERE c.componente = 'GPU' and cm.descricao = 'Temperatura') as tempGpu,
+        
+        (SELECT AVG(cp.dadoCaptura) FROM ConfiguracaoMonitoramento as cm
+        JOIN Componente as c ON fkComponente = idComponente
+        JOIN Captura as cp ON cm.idConfiguracaoMonitoramento = cp.idCaptura
+        WHERE c.componente = 'CPU' and cm.descricao = 'Temperatura') as tempCpu
+FROM Servidor
+JOIN Empresa ON idEmpresa = fkEmpresa;
 
-CREATE VIEW gpu1_temperatura_server1_1 AS 
-SELECT gpu1_temperatura
-FROM captura_servidor_1
-WHERE gpu1_temperatura > 80;
-
-SELECT * FROM gpu1_temperatura_server1_1;
-
-CREATE VIEW disco2_percent_server1_1 AS 
-SELECT disco2_percent_uso
-FROM captura_servidor_1
-WHERE disco2_percent_uso > 80;
-
-SELECT * FROM disco2_percent_server1_1;
+SELECT * FROM viewListagemServidores WHERE idEmpresa = 1;
