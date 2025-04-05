@@ -290,7 +290,7 @@ SELECT * FROM viewInsightsProcessos;
 CREATE OR REPLACE VIEW viewAlertasPorContexto AS
 SELECT * FROM Alerta; -- pensar bem sobre todos os filtros que podem ser aplicados aqui
 
-SELECT * FROM viewInsightsComponentes WHERE componente = 'CPU' and idEmpresa = 1;
+-- SELECT * FROM viewInsightsComponentes WHERE componente = 'CPU' and idEmpresa = 1;
 
 CREATE OR REPLACE VIEW `viewListagemColaboradores` AS
 SELECT idColaborador as id, nome, email, cargo, documento, idEmpresa FROM Colaborador 
