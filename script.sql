@@ -267,7 +267,7 @@ SELECT
 FROM Alerta a
 JOIN ConfiguracaoMonitoramento cfg ON a.fkConfiguracaoMonitoramento = cfg.idConfiguracaoMonitoramento
 JOIN Componente c ON cfg.fkComponente = c.idComponente
-JOIN Servidor s ON cfg.fkServidor = s.idServidor
+JOIN Servidor s ON c.fkServidor = s.idServidor
 JOIN Empresa e ON s.fkEmpresa = e.idEmpresa
 GROUP BY e.idEmpresa, c.componente;
 
