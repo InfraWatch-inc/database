@@ -271,7 +271,7 @@ JOIN Servidor s ON c.fkServidor = s.idServidor
 JOIN Empresa e ON s.fkEmpresa = e.idEmpresa
 GROUP BY e.idEmpresa, c.componente;
 
-SELECT * FROM viewKpiInsights WHERE idEmpresa = 1 and c.componente = 'CPU';
+SELECT * FROM viewKpiInsights WHERE idEmpresa = 1 and componente = 'CPU';
 
 CREATE OR REPLACE VIEW viewInsightsProcessos AS
 SELECT 
@@ -290,7 +290,7 @@ SELECT * FROM viewInsightsProcessos;
 CREATE OR REPLACE VIEW viewAlertasPorContexto AS
 SELECT * FROM Alerta; -- pensar bem sobre todos os filtros que podem ser aplicados aqui
 
-SELECT * FROM viewInsightsComponentes WHERE .componente = 'CPU' and idEmpresa = 1;
+SELECT * FROM viewInsightsComponentes WHERE componente = 'CPU' and idEmpresa = 1;
 
 CREATE OR REPLACE VIEW `viewListagemColaboradores` AS
 SELECT idColaborador as id, nome, email, cargo, documento, idEmpresa FROM Colaborador 
