@@ -303,6 +303,24 @@ SELECT idColaborador as id, nome, email, documento, tipoDocumento, cargo, nivel 
 
 SELECT * FROM viewGetColaborador;
 
+CREATE OR REPLACE VIEW `viewGetServidor` AS
+SELECT Componente.componente, 
+       Componente.numeracao, 
+       ConfiguracaoMonitoramento.descricao, 
+       ConfiguracaoMonitoramento.funcaoPython, 
+       ConfiguracaoMonitoramento.idConfiguracaoMonitoramento, 
+       Servidor.idServidor, 
+       ConfiguracaoMonitoramento.limiteAtencao, 
+       ConfiguracaoMonitoramento.limiteCritico,
+       Servidor.uuidPlacaMae
+FROM Servidor 
+JOIN Componente 
+ON Servidor.idServidor = Componente.fkServidor 
+JOIN ConfiguracaoMonitoramento 
+ON ConfiguracaoMonitoramento.fkComponente = Componente.idComponente;
+
+SELECT * FROM viewGetServidor WHERE Servidor.uuidPlacaMae = 'NBQ5911005111817C8MX00';
+
 CREATE OR REPLACE VIEW `viewListagemServidores` AS
 SELECT idServidor as id, tagName as nome, idInstancia, idEmpresa, 
 		(SELECT COUNT(numeracao) FROM Componente as cm
