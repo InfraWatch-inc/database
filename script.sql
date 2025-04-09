@@ -108,7 +108,6 @@ CREATE TABLE IF NOT EXISTS Alerta(
 
 CREATE TABLE IF NOT EXISTS Processo(
 	idProcesso INT PRIMARY KEY AUTO_INCREMENT,
-    pid INT NOT NULL,
     nomeProcesso VARCHAR(45) NOT NULL,
     usoCpu FLOAT NOT NULL,
     usoGpu FLOAT NOT NULL,
@@ -345,11 +344,43 @@ SELECT * FROM viewListagemServidores WHERE idEmpresa = 1;
 
 #---------------VIEWS ANÁLISES---------------------
 -- DESENVOLVER IDEALIZAÇÃO DE VIEWS PARA ANÁLISES DE DADOS, RELATÓRIOS E GRÁFICOS
-CREATE VIEW `viewCapturasServidor` AS
-SELECT * FROM Captura;
-
-CREATE VIEW `viewCapturasServidor` AS
-SELECT * FROM Captura;
-
-CREATE VIEW `viewProcessosServidor` AS
-SELECT * FROM Processos;
+CREATE VIEW `viewAnalise` AS
+SELECT 
+    s.tagName AS nomeServidor,
+    s.SO AS sistemaOperacional,
+    e.razaoSocial AS empresa,
+    e.pais,
+    ed.estado,
+    c.componente,
+    c.numeracao,
+    c.modelo,
+    cm.dadoCaptura AS valorMonitorado,
+    cfg.limiteAtencao,
+    cfg.limiteCritico,
+    IF(a.idAlerta IS NOT NULL, 'Sim', 'Não') AS gerouAlerta,
+    cm.dataHora,
+    GROUP_CONCAT(
+        CONCAT('PID: ', p.pid, ', Nome: ', p.nomeProcesso, ', CPU: ', p.usoCpu, '%, RAM: ', p.usoRam, '%, GPU: ', p.usoGpu, '%')
+        ORDER BY p.usoCpu DESC
+        SEPARATOR ' | '
+    ) AS top5Processos
+FROM Captura cm
+JOIN ConfiguracaoMonitoramento cfg ON cm.fkConfiguracaoMonitoramento = cfg.idConfiguracaoMonitoramento
+JOIN Componente c ON cfg.fkComponente = c.idComponente
+JOIN Servidor s ON c.fkServidor = s.idServidor
+JOIN Empresa e ON s.fkEmpresa = e.idEmpresa
+JOIN Endereco ed ON s.fkEndereco = ed.idEndereco
+LEFT JOIN Alerta a ON a.fkConfiguracaoMonitoramento = cfg.idConfiguracaoMonitoramento AND a.dataHora = cm.dataHora
+LEFT JOIN (
+    SELECT 
+        pr.idProcesso,
+        pr.fkServidor,
+        pr.pid,
+        pr.nomeProcesso,
+        pr.usoCpu,
+        pr.usoRam,
+        pr.usoGpu,
+        RANK() OVER (PARTITION BY pr.fkServidor ORDER BY pr.usoCpu DESC) AS rank_process
+    FROM Processo pr
+) p ON p.fkServidor = s.idServidor AND p.rank_process <= 5
+GROUP BY cm.idCaptura;
