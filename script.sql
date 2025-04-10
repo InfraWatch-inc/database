@@ -12,7 +12,6 @@ CREATE TABLE IF NOT EXISTS Empresa (
     status VARCHAR(45) NOT NULL DEFAULT 'ativo', -- fala se a empresa ta ativa ou não
     telefone VARCHAR(15) NOT NULL,
     site VARCHAR(200) NOT NULL,
-    pais CHAR(2) NOT NULL,
     CONSTRAINT chkStatus CHECK (status IN ('ativo','ativo'))
 );
 
@@ -24,7 +23,8 @@ CREATE TABLE IF NOT EXISTS Endereco (
     bairro VARCHAR(45) NOT NULL,
     cidade VARCHAR(45) NOT NULL,
     estado CHAR(3) NOT NULL,
-    complemento VARCHAR(200) NOT NULL
+    complemento VARCHAR(200) NOT NULL,
+	pais CHAR(2) NOT NULL
 );
 
 ALTER TABLE Empresa ADD COLUMN fkEndereco INT NOT NULL,
@@ -118,15 +118,15 @@ CREATE TABLE IF NOT EXISTS Processo(
 
 #---------------INSERTS---------------------
 
-INSERT INTO Endereco (cep, logradouro, numero, bairro, cidade, estado, complemento) VALUES 
-('70000-000', 'Nguyen Van Linh', 45, 'Hai Chau', 'Da Nang', 'VN', 'Próximo ao Dragon Bridge'),
-('50670', 'Linder Höhe', 125, 'Porz', 'Colônia', 'DE', 'Próximo ao Aeroporto de Colônia-Bonn'),
-('WC2H 9JQ', 'Shaftesbury Ave', 89, 'Soho', 'Londres', 'UK', 'Próximo ao Palace Theatre');
+INSERT INTO Endereco (cep, logradouro, numero, bairro, cidade, estado, complemento, pais) VALUES 
+('70000-000', 'Nguyen Van Linh', 45, 'Hai Chau', 'Da Nang', 'VN', 'Próximo ao Dragon Bridge', 'VN'),
+('50670', 'Linder Höhe', 125, 'Porz', 'Colônia', 'DE', 'Próximo ao Aeroporto de Colônia-Bonn', 'DE'),
+('WC2H 9JQ', 'Shaftesbury Ave', 89, 'Soho', 'Londres', 'UK', 'Próximo ao Palace Theatre', 'UK');
 
-INSERT INTO Empresa (razaoSocial, numeroTin, telefone, site, pais, fkEndereco) VALUES
-('iRender', '112233445566', '(11) 91234-5678', 'https://www.irender.net', 'VN', 1),
-('RebusFarm', '223344556677','(49) 98765-4321', 'https://www.rebusfarm.net', 'DE', 2),
-('GarageFarm.NET', '334455667788','(44) 99999-8888', 'https://garagefarm.net', 'UK', 3);
+INSERT INTO Empresa (razaoSocial, numeroTin, telefone, site, fkEndereco) VALUES
+('iRender', '112233445566', '(11) 91234-5678', 'https://www.irender.net',  1),
+('RebusFarm', '223344556677','(49) 98765-4321', 'https://www.rebusfarm.net',  2),
+('GarageFarm.NET', '334455667788','(44) 99999-8888', 'https://garagefarm.net', 3);
 
 INSERT INTO Colaborador (nome, email, documento, tipoDocumento, senha, fkEmpresa, cargo, nivel, fkResponsavel) VALUES 
 ('Beatriz Moreira', 'beatriz.moreira@email.com', '34567890123', 'CPF', 'senha789', 1, 'COO', 3, null),
@@ -291,7 +291,6 @@ SELECT * FROM viewInsightsProcessos;
 
 CREATE OR REPLACE VIEW viewAlertasPorContexto AS
 SELECT 
-    -- Agrupador (contexto x)
     CASE 
         WHEN EXTRACT(MONTH FROM a.dataHora) BETWEEN 3 AND 5 THEN 'Primavera'
         WHEN EXTRACT(MONTH FROM a.dataHora) BETWEEN 6 AND 8 THEN 'Verão'
@@ -299,14 +298,13 @@ SELECT
         ELSE 'Inverno'
     END AS estacaoAno,
     
-    CONCAT(EXTRACT(YEAR FROM a.dataHora), '-', LPAD(EXTRACT(MONTH FROM a.dataHora)::TEXT, 2, '0')) AS mes,
-    CONCAT(EXTRACT(YEAR FROM a.dataHora), '-', 
-           CASE 
-               WHEN EXTRACT(MONTH FROM a.dataHora) <= 6 THEN '1º Semestre'
-               ELSE '2º Semestre'
-           END) AS semestre,
-    EXTRACT(YEAR FROM a.dataHora) AS ano,
-
+	EXTRACT(YEAR FROM a.dataHora) as ano, 
+	EXTRACT(MONTH FROM a.dataHora) AS mes,
+    
+    CASE 
+		WHEN EXTRACT(MONTH FROM a.dataHora) <= 6 THEN '1º Semestre'
+		ELSE '2º Semestre'
+	END AS semestre,
     en.estado,
     en.pais,
     c.modelo,
@@ -321,8 +319,6 @@ GROUP BY
     estacaoAno, mes, semestre, ano,
     en.estado, en.pais,
     c.modelo;
-
-SELECT * FROM viewInsightsComponentes WHERE componente = 'CPU' and idEmpresa = 1;
 
 CREATE OR REPLACE VIEW `viewListagemColaboradores` AS
 SELECT idColaborador as id, nome, email, cargo, documento, idEmpresa FROM Colaborador 
@@ -351,7 +347,7 @@ ON Servidor.idServidor = Componente.fkServidor
 JOIN ConfiguracaoMonitoramento 
 ON ConfiguracaoMonitoramento.fkComponente = Componente.idComponente;
 
-SELECT * FROM viewGetServidor WHERE Servidor.uuidPlacaMae = 'NBQ5911005111817C8MX00';
+SELECT * FROM viewGetServidor WHERE uuidPlacaMae = 'NBQ5911005111817C8MX00';
 
 CREATE OR REPLACE VIEW `viewListagemServidores` AS
 SELECT idServidor as id, tagName as nome, idInstancia, idEmpresa, 
@@ -382,7 +378,7 @@ SELECT
     s.tagName AS nomeServidor,
     s.SO AS sistemaOperacional,
     e.razaoSocial AS empresa,
-    e.pais,
+    ed.pais,
     ed.estado,
     c.componente,
     c.numeracao,
@@ -393,7 +389,7 @@ SELECT
     IF(a.idAlerta IS NOT NULL, 'Sim', 'Não') AS gerouAlerta,
     cm.dataHora,
     GROUP_CONCAT(
-        CONCAT('PID: ', p.pid, ', Nome: ', p.nomeProcesso, ', CPU: ', p.usoCpu, '%, RAM: ', p.usoRam, '%, GPU: ', p.usoGpu, '%')
+        CONCAT('Nome: ', p.nomeProcesso, ', CPU: ', p.usoCpu, '%, RAM: ', p.usoRam, '%, GPU: ', p.usoGpu, '%')
         ORDER BY p.usoCpu DESC
         SEPARATOR ' | '
     ) AS top5Processos
@@ -408,7 +404,6 @@ LEFT JOIN (
     SELECT 
         pr.idProcesso,
         pr.fkServidor,
-        pr.pid,
         pr.nomeProcesso,
         pr.usoCpu,
         pr.usoRam,
