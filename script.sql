@@ -279,6 +279,9 @@ SELECT
     ROUND(AVG(usoRam), 2) AS mediaUsoRam,
     ROUND(AVG(usoGpu), 2) AS mediaUsoGpu
 FROM Processo
+JOIN Servidor as s ON Processo.fkServidor = idServidor
+JOIN Componente as c ON c.fkServidor = idServidor
+JOIN Empresa as e ON e.idEMpresa = fkEmpresa
 GROUP BY nomeProcesso
 ORDER BY 
     (AVG(usoCpu) + AVG(usoRam) + AVG(usoGpu)) DESC
@@ -287,9 +290,39 @@ LIMIT 6;
 SELECT * FROM viewInsightsProcessos;
 
 CREATE OR REPLACE VIEW viewAlertasPorContexto AS
-SELECT * FROM Alerta; -- pensar bem sobre todos os filtros que podem ser aplicados aqui
+SELECT 
+    -- Agrupador (contexto x)
+    CASE 
+        WHEN EXTRACT(MONTH FROM a.dataHora) BETWEEN 3 AND 5 THEN 'Primavera'
+        WHEN EXTRACT(MONTH FROM a.dataHora) BETWEEN 6 AND 8 THEN 'Verão'
+        WHEN EXTRACT(MONTH FROM a.dataHora) BETWEEN 9 AND 11 THEN 'Outono'
+        ELSE 'Inverno'
+    END AS estacaoAno,
+    
+    CONCAT(EXTRACT(YEAR FROM a.dataHora), '-', LPAD(EXTRACT(MONTH FROM a.dataHora)::TEXT, 2, '0')) AS mes,
+    CONCAT(EXTRACT(YEAR FROM a.dataHora), '-', 
+           CASE 
+               WHEN EXTRACT(MONTH FROM a.dataHora) <= 6 THEN '1º Semestre'
+               ELSE '2º Semestre'
+           END) AS semestre,
+    EXTRACT(YEAR FROM a.dataHora) AS ano,
 
--- SELECT * FROM viewInsightsComponentes WHERE componente = 'CPU' and idEmpresa = 1;
+    en.estado,
+    en.pais,
+    c.modelo,
+    COUNT(*) AS qtdAlertas
+
+FROM Alerta a
+JOIN ConfiguracaoMonitoramento cm ON a.fkConfiguracaoMonitoramento = cm.idConfiguracaoMonitoramento
+JOIN Componente c ON cm.fkComponente = c.idComponente
+JOIN Servidor s ON c.fkServidor = s.idServidor
+JOIN Endereco en ON s.fkEndereco = en.idEndereco
+GROUP BY 
+    estacaoAno, mes, semestre, ano,
+    en.estado, en.pais,
+    c.modelo;
+
+SELECT * FROM viewInsightsComponentes WHERE componente = 'CPU' and idEmpresa = 1;
 
 CREATE OR REPLACE VIEW `viewListagemColaboradores` AS
 SELECT idColaborador as id, nome, email, cargo, documento, idEmpresa FROM Colaborador 
