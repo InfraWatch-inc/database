@@ -113,6 +113,7 @@ CREATE TABLE IF NOT EXISTS Processo(
     usoGpu FLOAT NOT NULL,
     usoRam FLOAT NOT NULL,
     fkServidor INT NOT NULL,
+    dataHora DATETIME NOT NULL,
     FOREIGN KEY (fkServidor) REFERENCES Servidor(idServidor)
 );
 
