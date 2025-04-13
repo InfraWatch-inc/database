@@ -374,7 +374,7 @@ SELECT * FROM viewListagemServidores WHERE idEmpresa = 1;
 
 #---------------VIEWS ANÁLISES---------------------
 -- DESENVOLVER IDEALIZAÇÃO DE VIEWS PARA ANÁLISES DE DADOS, RELATÓRIOS E GRÁFICOS
-CREATE VIEW `viewAnalise` AS
+CREATE VIEW viewAnalise AS
 SELECT 
     s.tagName AS nomeServidor,
     s.SO AS sistemaOperacional,
@@ -387,12 +387,15 @@ SELECT
     cm.dadoCaptura AS valorMonitorado,
     cfg.limiteAtencao,
     cfg.limiteCritico,
-    IF(a.idAlerta IS NOT NULL, 'Sim', 'Não') AS gerouAlerta,
+    IF(MAX(a.idAlerta) IS NOT NULL, 'Sim', 'Não') AS gerouAlerta,
     cm.dataHora,
-    GROUP_CONCAT(
-        CONCAT('Nome: ', p.nomeProcesso, ', CPU: ', p.usoCpu, '%, RAM: ', p.usoRam, '%, GPU: ', p.usoGpu, '%')
-        ORDER BY p.usoCpu DESC
-        SEPARATOR ' | '
+    JSON_ARRAYAGG(
+        JSON_OBJECT(
+            'usoCpu', p.usoCpu,
+            'usoGpu', p.usoGpu,
+            'usoRam', p.usoRam,
+            'nome', p.nomeProcesso
+        )
     ) AS top5Processos
 FROM Captura cm
 JOIN ConfiguracaoMonitoramento cfg ON cm.fkConfiguracaoMonitoramento = cfg.idConfiguracaoMonitoramento
