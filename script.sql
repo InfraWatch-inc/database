@@ -341,12 +341,15 @@ SELECT Componente.componente,
        Servidor.idServidor, 
        ConfiguracaoMonitoramento.limiteAtencao, 
        ConfiguracaoMonitoramento.limiteCritico,
-       Servidor.uuidPlacaMae
+       Servidor.uuidPlacaMae,
+       idEmpresa
 FROM Servidor 
 JOIN Componente 
 ON Servidor.idServidor = Componente.fkServidor 
 JOIN ConfiguracaoMonitoramento 
-ON ConfiguracaoMonitoramento.fkComponente = Componente.idComponente;
+ON ConfiguracaoMonitoramento.fkComponente = Componente.idComponente
+JOIN Empresa
+ON idEmpresa = fkEmpresa;
 
 SELECT * FROM viewGetServidor WHERE uuidPlacaMae = 'NBQ5911005111817C8MX00';
 
