@@ -7,8 +7,7 @@ CREATE TABLE IF NOT EXISTS Captura(
     idCaptura INT PRIMARY KEY AUTO_INCREMENT,
     dadoCaptura FLOAT NOT NULL,
     dataHora DATETIME NOT NULL DEFAULT now(),
-    fkConfiguracaoMonitoramento INT NOT NULL,
-    FOREIGN KEY (fkConfiguracaoMonitoramento) REFERENCES ConfiguracaoMonitoramento(idConfiguracaoMonitoramento)
+    fkConfiguracaoMonitoramento INT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS Alerta(
@@ -17,7 +16,6 @@ CREATE TABLE IF NOT EXISTS Alerta(
     dataHora DATETIME NOT NULL DEFAULT now(),
     valor FLOAT NOT NULL,
     fkConfiguracaoMonitoramento INT NOT NULL,
-    FOREIGN KEY (fkConfiguracaoMonitoramento) REFERENCES ConfiguracaoMonitoramento(idConfiguracaoMonitoramento),
     CONSTRAINT chkNivelAlerta CHECK (nivel IN (1, 2))
 );
 
@@ -28,6 +26,5 @@ CREATE TABLE IF NOT EXISTS Processo(
     usoGpu FLOAT NOT NULL,
     usoRam FLOAT NOT NULL,
     fkServidor INT NOT NULL,
-    dataHora DATETIME NOT NULL,
-    FOREIGN KEY (fkServidor) REFERENCES Servidor(idServidor)
+    dataHora DATETIME NOT NULL
 );
