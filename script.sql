@@ -384,19 +384,20 @@ INSERT INTO ConfiguracaoMonitoramento (unidadeMedida, descricao, fkComponente, l
 -- -- DESENVOLVER IDEALIZAÇÃO DE VIEWS PARA ANÁLISES DE DADOS, RELATÓRIOS E GRÁFICOS
 -- CREATE VIEW viewAnalise AS
 -- SELECT 
---     s.tagName AS nomeServidor,
---     s.SO AS sistemaOperacional,
---     e.razaoSocial AS empresa,
---     ed.pais,
---     ed.estado,
---     c.componente,
---     c.numeracao,
---     c.modelo,
---     cm.dadoCaptura AS valorMonitorado,
---     cfg.limiteAtencao,
---     cfg.limiteCritico,
---     IF(MAX(a.idAlerta) IS NOT NULL, 'Sim', 'Não') AS gerouAlerta,
---     cm.dataHora,
+--     s.tagName AS nomeServidor, 
+--     s.SO AS sistemaOperacional, 
+--     e.razaoSocial AS empresa, 
+--     ed.pais, 
+--     ed.estado, 
+--     c.componente, 
+--     c.numeracao, 
+--     c.modelo, 
+--     cfg.descricao, 
+--     cm.dadoCaptura AS valorMonitorado, 
+--     cfg.limiteAtencao, 
+--     cfg.limiteCritico, 
+--     IF(MAX(a.idAlerta) IS NOT NULL, 'Sim', 'Não') AS gerouAlerta, 
+--     cm.dataHora, 
 --     JSON_ARRAYAGG(
 --         JSON_OBJECT(
 --             'usoCpu', p.usoCpu,
@@ -404,7 +405,7 @@ INSERT INTO ConfiguracaoMonitoramento (unidadeMedida, descricao, fkComponente, l
 --             'usoRam', p.usoRam,
 --             'nome', p.nomeProcesso
 --         )
---     ) AS top5Processos
+--     ) AS top5Processos 
 -- FROM Captura cm
 -- JOIN ConfiguracaoMonitoramento cfg ON cm.fkConfiguracaoMonitoramento = cfg.idConfiguracaoMonitoramento
 -- JOIN Componente c ON cfg.fkComponente = c.idComponente
