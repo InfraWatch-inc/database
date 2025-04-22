@@ -87,6 +87,10 @@ CREATE TABLE IF NOT EXISTS ConfiguracaoMonitoramento (
 );
 
 #---------------MONITORAMENTO---------------------
+DROP DATABASE IF EXISTS Captura;
+CREATE DATABASE IF NOT EXISTS Captura;
+USE Captura;
+
 
 CREATE TABLE IF NOT EXISTS Captura(
     idCaptura INT PRIMARY KEY AUTO_INCREMENT,
@@ -118,6 +122,7 @@ CREATE TABLE IF NOT EXISTS Processo(
 );
 
 #---------------INSERTS---------------------
+USE infrawatch;
 
 INSERT INTO Endereco (cep, logradouro, numero, bairro, cidade, estado, complemento, pais) VALUES 
 ('70000-000', 'Nguyen Van Linh', 45, 'Hai Chau', 'Da Nang', 'VN', 'Próximo ao Dragon Bridge', 'VN'),
@@ -179,243 +184,243 @@ INSERT INTO ConfiguracaoMonitoramento (unidadeMedida, descricao, fkComponente, l
 ('Porcentagem', 'Uso do Disco', 5, 80.0, 95.0, 'psutil.disk_usage("/").percent'),
 ('Byte', 'Uso do Disco', 5, 500000000000, 1000000000000, 'psutil.disk_usage("/").used');
 
-#---------------VIEWS SISTEMA---------------------
+#---------------VIEWS SISTEMA--------------------- TODO INTEGRAR VIEWS ENTRE DIFERENTES SCHEMAS
 
-CREATE OR REPLACE VIEW `viewTempoReal` AS 
-SELECT s.idServidor,
-        (SELECT JSON_ARRAYAGG(JSON_OBJECT('usoCpu', usoCpu, 'usoGpu', usoGpu, 'usoRam', usoRam, 'nome', nomeProcesso)) FROM Processo
-        JOIN Servidor ON s.idServidor = fkServidor 
-        ORDER BY usoCpu LIMIT 5) as processosMonitorados,
+-- CREATE OR REPLACE VIEW `viewTempoReal` AS 
+-- SELECT s.idServidor,
+--         (SELECT JSON_ARRAYAGG(JSON_OBJECT('usoCpu', usoCpu, 'usoGpu', usoGpu, 'usoRam', usoRam, 'nome', nomeProcesso)) FROM Processo
+--         JOIN Servidor ON s.idServidor = fkServidor 
+--         ORDER BY usoCpu LIMIT 5) as processosMonitorados,
         
-        (SELECT dadoCaptura FROM Captura 
-        JOIN ConfiguracaoMonitoramento ON idConfiguracaoMonitoramento = fkConfiguracaoMonitoramento
-        JOIN Componente as c ON fkComponente = idComponente 
-        JOIN Servidor ON s.idServidor = fkServidor
-        WHERE c.componente = 'DISCO'
-        ORDER BY Captura.dataHora
-        LIMIT 1) as kpiDisco,
+--         (SELECT dadoCaptura FROM Captura 
+--         JOIN ConfiguracaoMonitoramento ON idConfiguracaoMonitoramento = fkConfiguracaoMonitoramento
+--         JOIN Componente as c ON fkComponente = idComponente 
+--         JOIN Servidor ON s.idServidor = fkServidor
+--         WHERE c.componente = 'DISCO'
+--         ORDER BY Captura.dataHora
+--         LIMIT 1) as kpiDisco,
 
-        (SELECT dadoCaptura FROM Captura 
-        JOIN ConfiguracaoMonitoramento as cm ON idConfiguracaoMonitoramento = fkConfiguracaoMonitoramento
-        JOIN Componente as c ON fkComponente = idComponente 
-        JOIN Servidor ON s.idServidor = fkServidor
-        WHERE c.componente = 'RAM'
-        ORDER BY Captura.dataHora
-        LIMIT 1) as kpiRam,
+--         (SELECT dadoCaptura FROM Captura 
+--         JOIN ConfiguracaoMonitoramento as cm ON idConfiguracaoMonitoramento = fkConfiguracaoMonitoramento
+--         JOIN Componente as c ON fkComponente = idComponente 
+--         JOIN Servidor ON s.idServidor = fkServidor
+--         WHERE c.componente = 'RAM'
+--         ORDER BY Captura.dataHora
+--         LIMIT 1) as kpiRam,
 
-        (SELECT dadoCaptura FROM Captura 
-        JOIN ConfiguracaoMonitoramento as cm ON idConfiguracaoMonitoramento = fkConfiguracaoMonitoramento
-        JOIN Componente as c ON fkComponente = idComponente 
-        JOIN Servidor ON s.idServidor = fkServidor
-        WHERE c.componente = 'CPU' AND cm.descricao = 'Uso' 
-        ORDER BY Captura.dataHora
-        LIMIT 1) as kpiUsoCpu,
+--         (SELECT dadoCaptura FROM Captura 
+--         JOIN ConfiguracaoMonitoramento as cm ON idConfiguracaoMonitoramento = fkConfiguracaoMonitoramento
+--         JOIN Componente as c ON fkComponente = idComponente 
+--         JOIN Servidor ON s.idServidor = fkServidor
+--         WHERE c.componente = 'CPU' AND cm.descricao = 'Uso' 
+--         ORDER BY Captura.dataHora
+--         LIMIT 1) as kpiUsoCpu,
 
-        (SELECT dadoCaptura FROM Captura 
-        JOIN ConfiguracaoMonitoramento as cm ON idConfiguracaoMonitoramento = fkConfiguracaoMonitoramento
-        JOIN Componente as c ON fkComponente = idComponente 
-        JOIN Servidor ON s.idServidor = fkServidor
-        WHERE c.componente = 'CPU' AND cm.descricao = 'Temperatura'
-        ORDER BY Captura.dataHora
-        LIMIT 1) as kpiTemperaturaCpu,
+--         (SELECT dadoCaptura FROM Captura 
+--         JOIN ConfiguracaoMonitoramento as cm ON idConfiguracaoMonitoramento = fkConfiguracaoMonitoramento
+--         JOIN Componente as c ON fkComponente = idComponente 
+--         JOIN Servidor ON s.idServidor = fkServidor
+--         WHERE c.componente = 'CPU' AND cm.descricao = 'Temperatura'
+--         ORDER BY Captura.dataHora
+--         LIMIT 1) as kpiTemperaturaCpu,
 
-        (SELECT JSON_ARRAYAGG(JSON_OBJECT('valor',dadoCaptura,'componente',c.componente,'horario',dataHora,'numero',numeracao,'modelo',modelo)) FROM Captura 
-        JOIN ConfiguracaoMonitoramento ON idConfiguracaoMonitoramento = fkConfiguracaoMonitoramento
-        JOIN Componente as c ON fkComponente = idComponente 
-        JOIN Servidor ON s.idServidor = fkServidor
-        ORDER BY Captura.dataHora 
-        LIMIT 6) as dadosGraficosLinhas
-FROM Servidor as s
-GROUP BY s.idServidor;
+--         (SELECT JSON_ARRAYAGG(JSON_OBJECT('valor',dadoCaptura,'componente',c.componente,'horario',dataHora,'numero',numeracao,'modelo',modelo)) FROM Captura 
+--         JOIN ConfiguracaoMonitoramento ON idConfiguracaoMonitoramento = fkConfiguracaoMonitoramento
+--         JOIN Componente as c ON fkComponente = idComponente 
+--         JOIN Servidor ON s.idServidor = fkServidor
+--         ORDER BY Captura.dataHora 
+--         LIMIT 6) as dadosGraficosLinhas
+-- FROM Servidor as s
+-- GROUP BY s.idServidor;
 
-SELECT * FROM viewTempoReal WHERE idServidor = 1;
+-- SELECT * FROM viewTempoReal WHERE idServidor = 1;
 
-CREATE OR REPLACE VIEW `viewPrimeiroInsights` AS
-SELECT  idEmpresa,
-        Alerta.dataHora,
+-- CREATE OR REPLACE VIEW `viewPrimeiroInsights` AS
+-- SELECT  idEmpresa,
+--         Alerta.dataHora,
 
-        SUM(CASE WHEN c.componente = 'CPU' THEN 1 ELSE 0 END) AS qtdAlertasCpu,
-		SUM(CASE WHEN c.componente = 'GPU' THEN 1 ELSE 0 END) AS qtdAlertasGpu,
-		SUM(CASE WHEN c.componente = 'RAM' THEN 1 ELSE 0 END) AS qtdAlertasRam,
-		SUM(CASE WHEN c.componente = 'DISCO' THEN 1 ELSE 0 END) AS qtdAlertasDisco,
+--         SUM(CASE WHEN c.componente = 'CPU' THEN 1 ELSE 0 END) AS qtdAlertasCpu,
+-- 		SUM(CASE WHEN c.componente = 'GPU' THEN 1 ELSE 0 END) AS qtdAlertasGpu,
+-- 		SUM(CASE WHEN c.componente = 'RAM' THEN 1 ELSE 0 END) AS qtdAlertasRam,
+-- 		SUM(CASE WHEN c.componente = 'DISCO' THEN 1 ELSE 0 END) AS qtdAlertasDisco,
 
-        SUM(CASE WHEN c.componente = 'CPU' AND Alerta.nivel = 1 THEN 1 ELSE 0 END) AS qtdAlertasCpuAtencao,
-        SUM(CASE WHEN c.componente = 'GPU' AND Alerta.nivel = 1 THEN 1 ELSE 0 END) AS qtdAlertasGpuAtencao,
-        SUM(CASE WHEN c.componente = 'RAM' AND Alerta.nivel = 1 THEN 1 ELSE 0 END) AS qtdAlertasRamAtencao,
-        SUM(CASE WHEN c.componente = 'DISCO' AND Alerta.nivel = 1 THEN 1 ELSE 0 END) AS qtdAlertasDiscoAtencao,
+--         SUM(CASE WHEN c.componente = 'CPU' AND Alerta.nivel = 1 THEN 1 ELSE 0 END) AS qtdAlertasCpuAtencao,
+--         SUM(CASE WHEN c.componente = 'GPU' AND Alerta.nivel = 1 THEN 1 ELSE 0 END) AS qtdAlertasGpuAtencao,
+--         SUM(CASE WHEN c.componente = 'RAM' AND Alerta.nivel = 1 THEN 1 ELSE 0 END) AS qtdAlertasRamAtencao,
+--         SUM(CASE WHEN c.componente = 'DISCO' AND Alerta.nivel = 1 THEN 1 ELSE 0 END) AS qtdAlertasDiscoAtencao,
 
-        SUM(CASE WHEN c.componente = 'CPU' AND Alerta.nivel = 2 THEN 1 ELSE 0 END) AS qtdAlertasCpuCritico,
-        SUM(CASE WHEN c.componente = 'GPU' AND Alerta.nivel = 2 THEN 1 ELSE 0 END) AS qtdAlertasGpuCritico,
-        SUM(CASE WHEN c.componente = 'RAM' AND Alerta.nivel = 2 THEN 1 ELSE 0 END) AS qtdAlertasRamCritico,
-        SUM(CASE WHEN c.componente = 'DISCO' AND Alerta.nivel = 2 THEN 1 ELSE 0 END) AS qtdAlertasDiscoCritico
-FROM Alerta
-JOIN ConfiguracaoMonitoramento ON fkConfiguracaoMonitoramento = idConfiguracaoMonitoramento
-JOIN Componente as c ON idComponente = fkComponente
-JOIN Servidor ON fkServidor = idServidor
-JOIN Empresa ON fkEmpresa = idEmpresa
-GROUP BY Alerta.dataHora, idEmpresa;
+--         SUM(CASE WHEN c.componente = 'CPU' AND Alerta.nivel = 2 THEN 1 ELSE 0 END) AS qtdAlertasCpuCritico,
+--         SUM(CASE WHEN c.componente = 'GPU' AND Alerta.nivel = 2 THEN 1 ELSE 0 END) AS qtdAlertasGpuCritico,
+--         SUM(CASE WHEN c.componente = 'RAM' AND Alerta.nivel = 2 THEN 1 ELSE 0 END) AS qtdAlertasRamCritico,
+--         SUM(CASE WHEN c.componente = 'DISCO' AND Alerta.nivel = 2 THEN 1 ELSE 0 END) AS qtdAlertasDiscoCritico
+-- FROM Alerta
+-- JOIN ConfiguracaoMonitoramento ON fkConfiguracaoMonitoramento = idConfiguracaoMonitoramento
+-- JOIN Componente as c ON idComponente = fkComponente
+-- JOIN Servidor ON fkServidor = idServidor
+-- JOIN Empresa ON fkEmpresa = idEmpresa
+-- GROUP BY Alerta.dataHora, idEmpresa;
 
-SELECT * FROM viewPrimeiroInsights WHERE dataHora < now() and idEmpresa = 1; -- Aplicar os filtros temporais do período desejado
+-- SELECT * FROM viewPrimeiroInsights WHERE dataHora < now() and idEmpresa = 1; -- Aplicar os filtros temporais do período desejado
 
-CREATE OR REPLACE VIEW viewKpiInsights AS
-SELECT  
-    e.idEmpresa,
-    c.componente,
-    COUNT(DISTINCT cfg.idConfiguracaoMonitoramento) AS totalComponentesMonitorados,
-    COUNT(a.idAlerta) AS totalAlertasComponente
+-- CREATE OR REPLACE VIEW viewKpiInsights AS
+-- SELECT  
+--     e.idEmpresa,
+--     c.componente,
+--     COUNT(DISTINCT cfg.idConfiguracaoMonitoramento) AS totalComponentesMonitorados,
+--     COUNT(a.idAlerta) AS totalAlertasComponente
 
-FROM Alerta a
-JOIN ConfiguracaoMonitoramento cfg ON a.fkConfiguracaoMonitoramento = cfg.idConfiguracaoMonitoramento
-JOIN Componente c ON cfg.fkComponente = c.idComponente
-JOIN Servidor s ON c.fkServidor = s.idServidor
-JOIN Empresa e ON s.fkEmpresa = e.idEmpresa
-GROUP BY e.idEmpresa, c.componente;
+-- FROM Alerta a
+-- JOIN ConfiguracaoMonitoramento cfg ON a.fkConfiguracaoMonitoramento = cfg.idConfiguracaoMonitoramento
+-- JOIN Componente c ON cfg.fkComponente = c.idComponente
+-- JOIN Servidor s ON c.fkServidor = s.idServidor
+-- JOIN Empresa e ON s.fkEmpresa = e.idEmpresa
+-- GROUP BY e.idEmpresa, c.componente;
 
-SELECT * FROM viewKpiInsights WHERE idEmpresa = 1 and componente = 'CPU';
+-- SELECT * FROM viewKpiInsights WHERE idEmpresa = 1 and componente = 'CPU';
 
-CREATE OR REPLACE VIEW viewInsightsProcessos AS
-SELECT 
-    nomeProcesso,
-    ROUND(AVG(usoCpu), 2) AS mediaUsoCpu,
-    ROUND(AVG(usoRam), 2) AS mediaUsoRam,
-    ROUND(AVG(usoGpu), 2) AS mediaUsoGpu
-FROM Processo
-JOIN Servidor as s ON Processo.fkServidor = idServidor
-JOIN Componente as c ON c.fkServidor = idServidor
-JOIN Empresa as e ON e.idEMpresa = fkEmpresa
-GROUP BY nomeProcesso
-ORDER BY 
-    (AVG(usoCpu) + AVG(usoRam) + AVG(usoGpu)) DESC
-LIMIT 6;
+-- CREATE OR REPLACE VIEW viewInsightsProcessos AS
+-- SELECT 
+--     nomeProcesso,
+--     ROUND(AVG(usoCpu), 2) AS mediaUsoCpu,
+--     ROUND(AVG(usoRam), 2) AS mediaUsoRam,
+--     ROUND(AVG(usoGpu), 2) AS mediaUsoGpu
+-- FROM Processo
+-- JOIN Servidor as s ON Processo.fkServidor = idServidor
+-- JOIN Componente as c ON c.fkServidor = idServidor
+-- JOIN Empresa as e ON e.idEMpresa = fkEmpresa
+-- GROUP BY nomeProcesso
+-- ORDER BY 
+--     (AVG(usoCpu) + AVG(usoRam) + AVG(usoGpu)) DESC
+-- LIMIT 6;
 
-SELECT * FROM viewInsightsProcessos;
+-- SELECT * FROM viewInsightsProcessos;
 
-CREATE OR REPLACE VIEW viewAlertasPorContexto AS
-SELECT 
-    CASE 
-        WHEN EXTRACT(MONTH FROM a.dataHora) BETWEEN 3 AND 5 THEN 'Primavera'
-        WHEN EXTRACT(MONTH FROM a.dataHora) BETWEEN 6 AND 8 THEN 'Verão'
-        WHEN EXTRACT(MONTH FROM a.dataHora) BETWEEN 9 AND 11 THEN 'Outono'
-        ELSE 'Inverno'
-    END AS estacaoAno,
+-- CREATE OR REPLACE VIEW viewAlertasPorContexto AS
+-- SELECT 
+--     CASE 
+--         WHEN EXTRACT(MONTH FROM a.dataHora) BETWEEN 3 AND 5 THEN 'Primavera'
+--         WHEN EXTRACT(MONTH FROM a.dataHora) BETWEEN 6 AND 8 THEN 'Verão'
+--         WHEN EXTRACT(MONTH FROM a.dataHora) BETWEEN 9 AND 11 THEN 'Outono'
+--         ELSE 'Inverno'
+--     END AS estacaoAno,
     
-	EXTRACT(YEAR FROM a.dataHora) as ano, 
-	EXTRACT(MONTH FROM a.dataHora) AS mes,
+-- 	EXTRACT(YEAR FROM a.dataHora) as ano, 
+-- 	EXTRACT(MONTH FROM a.dataHora) AS mes,
     
-    CASE 
-		WHEN EXTRACT(MONTH FROM a.dataHora) <= 6 THEN '1º Semestre'
-		ELSE '2º Semestre'
-	END AS semestre,
-    en.estado,
-    en.pais,
-    c.modelo,
-    COUNT(*) AS qtdAlertas
+--     CASE 
+-- 		WHEN EXTRACT(MONTH FROM a.dataHora) <= 6 THEN '1º Semestre'
+-- 		ELSE '2º Semestre'
+-- 	END AS semestre,
+--     en.estado,
+--     en.pais,
+--     c.modelo,
+--     COUNT(*) AS qtdAlertas
 
-FROM Alerta a
-JOIN ConfiguracaoMonitoramento cm ON a.fkConfiguracaoMonitoramento = cm.idConfiguracaoMonitoramento
-JOIN Componente c ON cm.fkComponente = c.idComponente
-JOIN Servidor s ON c.fkServidor = s.idServidor
-JOIN Endereco en ON s.fkEndereco = en.idEndereco
-GROUP BY 
-    estacaoAno, mes, semestre, ano,
-    en.estado, en.pais,
-    c.modelo;
+-- FROM Alerta a
+-- JOIN ConfiguracaoMonitoramento cm ON a.fkConfiguracaoMonitoramento = cm.idConfiguracaoMonitoramento
+-- JOIN Componente c ON cm.fkComponente = c.idComponente
+-- JOIN Servidor s ON c.fkServidor = s.idServidor
+-- JOIN Endereco en ON s.fkEndereco = en.idEndereco
+-- GROUP BY 
+--     estacaoAno, mes, semestre, ano,
+--     en.estado, en.pais,
+--     c.modelo;
 
-CREATE OR REPLACE VIEW `viewListagemColaboradores` AS
-SELECT idColaborador as id, nome, email, cargo, documento, idEmpresa FROM Colaborador 
-JOIN Empresa ON idEmpresa = fkEmpresa;
+-- CREATE OR REPLACE VIEW `viewListagemColaboradores` AS
+-- SELECT idColaborador as id, nome, email, cargo, documento, idEmpresa FROM Colaborador 
+-- JOIN Empresa ON idEmpresa = fkEmpresa;
 
-SELECT * FROM viewListagemColaboradores WHERE idEmpresa = 1;
+-- SELECT * FROM viewListagemColaboradores WHERE idEmpresa = 1;
 
-CREATE OR REPLACE VIEW `viewGetColaborador` AS
-SELECT idColaborador as id, nome, email, documento, tipoDocumento, cargo, nivel FROM Colaborador;
+-- CREATE OR REPLACE VIEW `viewGetColaborador` AS
+-- SELECT idColaborador as id, nome, email, documento, tipoDocumento, cargo, nivel FROM Colaborador;
 
-SELECT * FROM viewGetColaborador;
+-- SELECT * FROM viewGetColaborador;
 
-CREATE OR REPLACE VIEW `viewGetServidor` AS
-SELECT Componente.componente, 
-       Componente.numeracao, 
-       ConfiguracaoMonitoramento.descricao, 
-       ConfiguracaoMonitoramento.funcaoPython, 
-       ConfiguracaoMonitoramento.idConfiguracaoMonitoramento, 
-       Servidor.idServidor, 
-       ConfiguracaoMonitoramento.limiteAtencao, 
-       ConfiguracaoMonitoramento.limiteCritico,
-       Servidor.uuidPlacaMae,
-       idEmpresa
-FROM Servidor 
-JOIN Componente 
-ON Servidor.idServidor = Componente.fkServidor 
-JOIN ConfiguracaoMonitoramento 
-ON ConfiguracaoMonitoramento.fkComponente = Componente.idComponente
-JOIN Empresa
-ON idEmpresa = fkEmpresa;
+-- CREATE OR REPLACE VIEW `viewGetServidor` AS
+-- SELECT Componente.componente, 
+--        Componente.numeracao, 
+--        ConfiguracaoMonitoramento.descricao, 
+--        ConfiguracaoMonitoramento.funcaoPython, 
+--        ConfiguracaoMonitoramento.idConfiguracaoMonitoramento, 
+--        Servidor.idServidor, 
+--        ConfiguracaoMonitoramento.limiteAtencao, 
+--        ConfiguracaoMonitoramento.limiteCritico,
+--        Servidor.uuidPlacaMae,
+--        idEmpresa
+-- FROM Servidor 
+-- JOIN Componente 
+-- ON Servidor.idServidor = Componente.fkServidor 
+-- JOIN ConfiguracaoMonitoramento 
+-- ON ConfiguracaoMonitoramento.fkComponente = Componente.idComponente
+-- JOIN Empresa
+-- ON idEmpresa = fkEmpresa;
 
-SELECT * FROM viewGetServidor WHERE uuidPlacaMae = 'NBQ5911005111817C8MX00';
+-- SELECT * FROM viewGetServidor WHERE uuidPlacaMae = 'NBQ5911005111817C8MX00';
 
-CREATE OR REPLACE VIEW `viewListagemServidores` AS
-SELECT idServidor as id, tagName as nome, idInstancia, idEmpresa, 
-		(SELECT COUNT(numeracao) FROM Componente as cm
-        WHERE cm.componente = 'CPU' and fkServidor = idServidor) as qtdCpu, 
+-- CREATE OR REPLACE VIEW `viewListagemServidores` AS
+-- SELECT idServidor as id, tagName as nome, idInstancia, idEmpresa, 
+-- 		(SELECT COUNT(numeracao) FROM Componente as cm
+--         WHERE cm.componente = 'CPU' and fkServidor = idServidor) as qtdCpu, 
         
-        (SELECT COUNT(numeracao) FROM Componente as cm
-        WHERE cm.componente = 'GPU' and fkServidor = idServidor) as qtdGpu,
+--         (SELECT COUNT(numeracao) FROM Componente as cm
+--         WHERE cm.componente = 'GPU' and fkServidor = idServidor) as qtdGpu,
         
-        (SELECT AVG(cp.dadoCaptura) FROM ConfiguracaoMonitoramento as cm
-        JOIN Componente as c ON fkComponente = idComponente
-        JOIN Captura as cp ON cm.idConfiguracaoMonitoramento = cp.idCaptura
-        WHERE c.componente = 'GPU' and cm.descricao = 'Temperatura') as tempGpu,
+--         (SELECT AVG(cp.dadoCaptura) FROM ConfiguracaoMonitoramento as cm
+--         JOIN Componente as c ON fkComponente = idComponente
+--         JOIN Captura as cp ON cm.idConfiguracaoMonitoramento = cp.idCaptura
+--         WHERE c.componente = 'GPU' and cm.descricao = 'Temperatura') as tempGpu,
         
-        (SELECT AVG(cp.dadoCaptura) FROM ConfiguracaoMonitoramento as cm
-        JOIN Componente as c ON fkComponente = idComponente
-        JOIN Captura as cp ON cm.idConfiguracaoMonitoramento = cp.idCaptura
-        WHERE c.componente = 'CPU' and cm.descricao = 'Temperatura') as tempCpu
-FROM Servidor
-JOIN Empresa ON idEmpresa = fkEmpresa;
+--         (SELECT AVG(cp.dadoCaptura) FROM ConfiguracaoMonitoramento as cm
+--         JOIN Componente as c ON fkComponente = idComponente
+--         JOIN Captura as cp ON cm.idConfiguracaoMonitoramento = cp.idCaptura
+--         WHERE c.componente = 'CPU' and cm.descricao = 'Temperatura') as tempCpu
+-- FROM Servidor
+-- JOIN Empresa ON idEmpresa = fkEmpresa;
 
-SELECT * FROM viewListagemServidores WHERE idEmpresa = 1;
+-- SELECT * FROM viewListagemServidores WHERE idEmpresa = 1;
 
-#---------------VIEWS ANÁLISES---------------------
--- DESENVOLVER IDEALIZAÇÃO DE VIEWS PARA ANÁLISES DE DADOS, RELATÓRIOS E GRÁFICOS
-CREATE VIEW viewAnalise AS
-SELECT 
-    s.tagName AS nomeServidor,
-    s.SO AS sistemaOperacional,
-    e.razaoSocial AS empresa,
-    ed.pais,
-    ed.estado,
-    c.componente,
-    c.numeracao,
-    c.modelo,
-    cm.dadoCaptura AS valorMonitorado,
-    cfg.limiteAtencao,
-    cfg.limiteCritico,
-    IF(MAX(a.idAlerta) IS NOT NULL, 'Sim', 'Não') AS gerouAlerta,
-    cm.dataHora,
-    JSON_ARRAYAGG(
-        JSON_OBJECT(
-            'usoCpu', p.usoCpu,
-            'usoGpu', p.usoGpu,
-            'usoRam', p.usoRam,
-            'nome', p.nomeProcesso
-        )
-    ) AS top5Processos
-FROM Captura cm
-JOIN ConfiguracaoMonitoramento cfg ON cm.fkConfiguracaoMonitoramento = cfg.idConfiguracaoMonitoramento
-JOIN Componente c ON cfg.fkComponente = c.idComponente
-JOIN Servidor s ON c.fkServidor = s.idServidor
-JOIN Empresa e ON s.fkEmpresa = e.idEmpresa
-JOIN Endereco ed ON s.fkEndereco = ed.idEndereco
-LEFT JOIN Alerta a ON a.fkConfiguracaoMonitoramento = cfg.idConfiguracaoMonitoramento AND a.dataHora = cm.dataHora
-LEFT JOIN (
-    SELECT 
-        pr.idProcesso,
-        pr.fkServidor,
-        pr.nomeProcesso,
-        pr.usoCpu,
-        pr.usoRam,
-        pr.usoGpu,
-        RANK() OVER (PARTITION BY pr.fkServidor ORDER BY pr.usoCpu DESC) AS rank_process
-    FROM Processo pr
-) p ON p.fkServidor = s.idServidor AND p.rank_process <= 5
-GROUP BY cm.idCaptura;
+-- #---------------VIEWS ANÁLISES---------------------
+-- -- DESENVOLVER IDEALIZAÇÃO DE VIEWS PARA ANÁLISES DE DADOS, RELATÓRIOS E GRÁFICOS
+-- CREATE VIEW viewAnalise AS
+-- SELECT 
+--     s.tagName AS nomeServidor,
+--     s.SO AS sistemaOperacional,
+--     e.razaoSocial AS empresa,
+--     ed.pais,
+--     ed.estado,
+--     c.componente,
+--     c.numeracao,
+--     c.modelo,
+--     cm.dadoCaptura AS valorMonitorado,
+--     cfg.limiteAtencao,
+--     cfg.limiteCritico,
+--     IF(MAX(a.idAlerta) IS NOT NULL, 'Sim', 'Não') AS gerouAlerta,
+--     cm.dataHora,
+--     JSON_ARRAYAGG(
+--         JSON_OBJECT(
+--             'usoCpu', p.usoCpu,
+--             'usoGpu', p.usoGpu,
+--             'usoRam', p.usoRam,
+--             'nome', p.nomeProcesso
+--         )
+--     ) AS top5Processos
+-- FROM Captura cm
+-- JOIN ConfiguracaoMonitoramento cfg ON cm.fkConfiguracaoMonitoramento = cfg.idConfiguracaoMonitoramento
+-- JOIN Componente c ON cfg.fkComponente = c.idComponente
+-- JOIN Servidor s ON c.fkServidor = s.idServidor
+-- JOIN Empresa e ON s.fkEmpresa = e.idEmpresa
+-- JOIN Endereco ed ON s.fkEndereco = ed.idEndereco
+-- LEFT JOIN Alerta a ON a.fkConfiguracaoMonitoramento = cfg.idConfiguracaoMonitoramento AND a.dataHora = cm.dataHora
+-- LEFT JOIN (
+--     SELECT 
+--         pr.idProcesso,
+--         pr.fkServidor,
+--         pr.nomeProcesso,
+--         pr.usoCpu,
+--         pr.usoRam,
+--         pr.usoGpu,
+--         RANK() OVER (PARTITION BY pr.fkServidor ORDER BY pr.usoCpu DESC) AS rank_process
+--     FROM Processo pr
+-- ) p ON p.fkServidor = s.idServidor AND p.rank_process <= 5
+-- GROUP BY cm.idCaptura;
