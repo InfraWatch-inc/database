@@ -7,7 +7,7 @@ USE infrawatch;
 CREATE TABLE IF NOT EXISTS Empresa (
     idEmpresa INT PRIMARY KEY AUTO_INCREMENT,
     razaoSocial VARCHAR(60) NOT NULL,
-    numeroTin VARCHAR(12) NOT NULL,
+    numeroTin VARCHAR(20) NOT NULL,
     status VARCHAR(45) NOT NULL DEFAULT 'ativo', -- fala se a empresa ta ativa ou não
     telefone VARCHAR(15) NOT NULL,
     site VARCHAR(200) NOT NULL,
@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS Endereco (
     numero INT NOT NULL,
     bairro VARCHAR(45) NOT NULL,
     cidade VARCHAR(45) NOT NULL,
-    estado CHAR(3) NOT NULL,
+    estado VARCHAR(45) NOT NULL,
     complemento VARCHAR(200) NOT NULL,
 	pais CHAR(2) NOT NULL
 );
