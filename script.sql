@@ -1,5 +1,4 @@
 DROP DATABASE IF EXISTS infrawatch;
-
 CREATE DATABASE IF NOT EXISTS infrawatch;
 USE infrawatch;
 
@@ -87,11 +86,6 @@ CREATE TABLE IF NOT EXISTS ConfiguracaoMonitoramento (
 );
 
 #---------------MONITORAMENTO---------------------
-DROP DATABASE IF EXISTS Captura;
-CREATE DATABASE IF NOT EXISTS Captura;
-USE Captura;
-
-
 CREATE TABLE IF NOT EXISTS Captura(
     idCaptura INT PRIMARY KEY AUTO_INCREMENT,
     dadoCaptura FLOAT NOT NULL,
@@ -122,7 +116,6 @@ CREATE TABLE IF NOT EXISTS Processo(
 );
 
 #---------------INSERTS---------------------
-USE infrawatch;
 
 INSERT INTO Endereco (cep, logradouro, numero, bairro, cidade, estado, complemento, pais) VALUES 
 ('70000-000', 'Nguyen Van Linh', 45, 'Hai Chau', 'Da Nang', 'VN', 'Próximo ao Dragon Bridge', 'VN'),
@@ -184,7 +177,7 @@ INSERT INTO ConfiguracaoMonitoramento (unidadeMedida, descricao, fkComponente, l
 ('Porcentagem', 'Uso do Disco', 5, 80.0, 95.0, 'psutil.disk_usage("/").percent'),
 ('Byte', 'Uso do Disco', 5, 500000000000, 1000000000000, 'psutil.disk_usage("/").used');
 
-#---------------VIEWS SISTEMA--------------------- TODO INTEGRAR VIEWS ENTRE DIFERENTES SCHEMAS
+#---------------VIEWS SISTEMA---------------------
 
 -- CREATE OR REPLACE VIEW `viewTempoReal` AS 
 -- SELECT s.idServidor,
