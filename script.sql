@@ -375,46 +375,46 @@ ON idEmpresa = fkEmpresa;
 
 -- #---------------VIEWS ANÁLISES---------------------
 -- -- DESENVOLVER IDEALIZAÇÃO DE VIEWS PARA ANÁLISES DE DADOS, RELATÓRIOS E GRÁFICOS
--- CREATE VIEW viewAnalise AS
--- SELECT 
---     s.tagName AS nomeServidor, 
---     s.SO AS sistemaOperacional, 
---     e.razaoSocial AS empresa, 
---     ed.pais, 
---     ed.estado, 
---     c.componente, 
---     c.numeracao, 
---     c.modelo, 
---     cfg.descricao, 
---     cm.dadoCaptura AS valorMonitorado, 
---     cfg.limiteAtencao, 
---     cfg.limiteCritico, 
---     IF(MAX(a.idAlerta) IS NOT NULL, 'Sim', 'Não') AS gerouAlerta, 
---     cm.dataHora, 
---     JSON_ARRAYAGG(
---         JSON_OBJECT(
---             'usoCpu', p.usoCpu,
---             'usoGpu', p.usoGpu,
---             'usoRam', p.usoRam,
---             'nome', p.nomeProcesso
---         )
---     ) AS top5Processos 
--- FROM Captura cm
--- JOIN ConfiguracaoMonitoramento cfg ON cm.fkConfiguracaoMonitoramento = cfg.idConfiguracaoMonitoramento
--- JOIN Componente c ON cfg.fkComponente = c.idComponente
--- JOIN Servidor s ON c.fkServidor = s.idServidor
--- JOIN Empresa e ON s.fkEmpresa = e.idEmpresa
--- JOIN Endereco ed ON s.fkEndereco = ed.idEndereco
--- LEFT JOIN Alerta a ON a.fkConfiguracaoMonitoramento = cfg.idConfiguracaoMonitoramento AND a.dataHora = cm.dataHora
--- LEFT JOIN (
---     SELECT 
---         pr.idProcesso,
---         pr.fkServidor,
---         pr.nomeProcesso,
---         pr.usoCpu,
---         pr.usoRam,
---         pr.usoGpu,
---         RANK() OVER (PARTITION BY pr.fkServidor ORDER BY pr.usoCpu DESC) AS rank_process
---     FROM Processo pr
--- ) p ON p.fkServidor = s.idServidor AND p.rank_process <= 5
--- GROUP BY cm.idCaptura;
+CREATE VIEW viewAnalise AS
+SELECT 
+    s.tagName AS nomeServidor, 
+    s.SO AS sistemaOperacional, 
+    e.razaoSocial AS empresa, 
+    ed.pais, 
+    ed.estado, 
+    c.componente, 
+    c.numeracao, 
+    c.modelo, 
+    cfg.descricao, 
+    cm.dadoCaptura AS valorMonitorado, 
+    cfg.limiteAtencao, 
+    cfg.limiteCritico, 
+    IF(MAX(a.idAlerta) IS NOT NULL, 'Sim', 'Não') AS gerouAlerta, 
+    cm.dataHora, 
+    JSON_ARRAYAGG(
+        JSON_OBJECT(
+            'usoCpu', p.usoCpu,
+           'usoGpu', p.usoGpu,
+            'usoRam', p.usoRam,
+           'nome', p.nomeProcesso
+         )
+     ) AS top5Processos 
+ FROM Captura cm
+ JOIN ConfiguracaoMonitoramento cfg ON cm.fkConfiguracaoMonitoramento = cfg.idConfiguracaoMonitoramento
+ JOIN Componente c ON cfg.fkComponente = c.idComponente
+JOIN Servidor s ON c.fkServidor = s.idServidor
+ JOIN Empresa e ON s.fkEmpresa = e.idEmpresa
+ JOIN Endereco ed ON s.fkEndereco = ed.idEndereco
+ LEFT JOIN Alerta a ON a.fkConfiguracaoMonitoramento = cfg.idConfiguracaoMonitoramento AND a.dataHora = cm.dataHora
+ LEFT JOIN (
+     SELECT 
+         pr.idProcesso,
+         pr.fkServidor,
+         pr.nomeProcesso,
+         pr.usoCpu,
+         pr.usoRam,
+         pr.usoGpu,
+         RANK() OVER (PARTITION BY pr.fkServidor ORDER BY pr.usoCpu DESC) AS rank_process
+     FROM Processo pr
+ ) p ON p.fkServidor = s.idServidor AND p.rank_process <= 5
+ GROUP BY cm.idCaptura;
