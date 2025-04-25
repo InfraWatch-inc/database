@@ -128,9 +128,9 @@ INSERT INTO Empresa (razaoSocial, numeroTin, telefone, site, fkEndereco) VALUES
 ('GarageFarm.NET', '334455667788','(44) 99999-8888', 'https://garagefarm.net', 3);
 
 INSERT INTO Colaborador (nome, email, documento, tipoDocumento, senha, fkEmpresa, cargo, nivel, fkResponsavel) VALUES 
-('Beatriz Moreira', 'beatriz.moreira@email.com', '34567890123', 'CPF', 'senha789', 1, 'COO', 3, null),
-('João Neto', 'joao.neto@email.com', '12345678901', 'CPF', 'senha123', 1, 'Técnico de Manutenção', 1, 1),
-('Carlos Eduardo', 'carlos.eduardo@email.com', '23456789012', 'CPF', 'senha456', 1, 'Analista de Dados', 2, 1);
+('Ana Moreira', 'Ana.moreira@email.com', '34567890123', 'CPF', 'senha789', 1, 'COO', 3, null),
+('Pedro Filho', 'pedro.filho@email.com', '12345678901', 'CPF', 'senha123', 1, 'Técnico de Manutenção', 1, 1),
+('André Muller', 'andre.muller@email.com', '23456789012', 'CPF', 'senha456', 1, 'Analista de Dados', 2, 1);
 
 INSERT INTO Servidor (tagName, tipo, uuidPlacaMae, idInstancia, SO, fkEmpresa, fkEndereco) VALUES
 ('SRV-001', 'fisico', '1234-5678-9101', 'inst-001', 'Linux', 1, 1),
