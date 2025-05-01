@@ -86,14 +86,6 @@ CREATE TABLE IF NOT EXISTS ConfiguracaoMonitoramento (
 );
 
 #---------------MONITORAMENTO---------------------
-CREATE TABLE IF NOT EXISTS Captura(
-    idCaptura INT PRIMARY KEY AUTO_INCREMENT,
-    dadoCaptura FLOAT NOT NULL,
-    dataHora DATETIME NOT NULL DEFAULT now(),
-    fkConfiguracaoMonitoramento INT NOT NULL,
-    FOREIGN KEY (fkConfiguracaoMonitoramento) REFERENCES ConfiguracaoMonitoramento(idConfiguracaoMonitoramento)
-);
-
 CREATE TABLE IF NOT EXISTS Alerta(
     idAlerta INT PRIMARY KEY AUTO_INCREMENT,
     nivel TINYINT NOT NULL, -- 1: Atenção, 2: Crítico
@@ -178,56 +170,6 @@ INSERT INTO ConfiguracaoMonitoramento (unidadeMedida, descricao, fkComponente, l
 ('Byte', 'Uso do Disco', 5, 500000000000, 1000000000000, 'psutil.disk_usage("/").used');
 
 #---------------VIEWS SISTEMA---------------------
-
--- CREATE OR REPLACE VIEW `viewTempoReal` AS 
--- SELECT s.idServidor,
---         (SELECT JSON_ARRAYAGG(JSON_OBJECT('usoCpu', usoCpu, 'usoGpu', usoGpu, 'usoRam', usoRam, 'nome', nomeProcesso)) FROM Processo
---         JOIN Servidor ON s.idServidor = fkServidor 
---         ORDER BY usoCpu LIMIT 5) as processosMonitorados,
-        
---         (SELECT dadoCaptura FROM Captura 
---         JOIN ConfiguracaoMonitoramento ON idConfiguracaoMonitoramento = fkConfiguracaoMonitoramento
---         JOIN Componente as c ON fkComponente = idComponente 
---         JOIN Servidor ON s.idServidor = fkServidor
---         WHERE c.componente = 'DISCO'
---         ORDER BY Captura.dataHora
---         LIMIT 1) as kpiDisco,
-
---         (SELECT dadoCaptura FROM Captura 
---         JOIN ConfiguracaoMonitoramento as cm ON idConfiguracaoMonitoramento = fkConfiguracaoMonitoramento
---         JOIN Componente as c ON fkComponente = idComponente 
---         JOIN Servidor ON s.idServidor = fkServidor
---         WHERE c.componente = 'RAM'
---         ORDER BY Captura.dataHora
---         LIMIT 1) as kpiRam,
-
---         (SELECT dadoCaptura FROM Captura 
---         JOIN ConfiguracaoMonitoramento as cm ON idConfiguracaoMonitoramento = fkConfiguracaoMonitoramento
---         JOIN Componente as c ON fkComponente = idComponente 
---         JOIN Servidor ON s.idServidor = fkServidor
---         WHERE c.componente = 'CPU' AND cm.descricao = 'Uso' 
---         ORDER BY Captura.dataHora
---         LIMIT 1) as kpiUsoCpu,
-
---         (SELECT dadoCaptura FROM Captura 
---         JOIN ConfiguracaoMonitoramento as cm ON idConfiguracaoMonitoramento = fkConfiguracaoMonitoramento
---         JOIN Componente as c ON fkComponente = idComponente 
---         JOIN Servidor ON s.idServidor = fkServidor
---         WHERE c.componente = 'CPU' AND cm.descricao = 'Temperatura'
---         ORDER BY Captura.dataHora
---         LIMIT 1) as kpiTemperaturaCpu,
-
---         (SELECT JSON_ARRAYAGG(JSON_OBJECT('valor',dadoCaptura,'componente',c.componente,'horario',dataHora,'numero',numeracao,'modelo',modelo)) FROM Captura 
---         JOIN ConfiguracaoMonitoramento ON idConfiguracaoMonitoramento = fkConfiguracaoMonitoramento
---         JOIN Componente as c ON fkComponente = idComponente 
---         JOIN Servidor ON s.idServidor = fkServidor
---         ORDER BY Captura.dataHora 
---         LIMIT 6) as dadosGraficosLinhas
--- FROM Servidor as s
--- GROUP BY s.idServidor;
-
--- SELECT * FROM viewTempoReal WHERE idServidor = 1;
-
 -- CREATE OR REPLACE VIEW `viewPrimeiroInsights` AS
 -- SELECT  idEmpresa,
 --         Alerta.dataHora,
@@ -372,49 +314,3 @@ ON idEmpresa = fkEmpresa;
 -- JOIN Empresa ON idEmpresa = fkEmpresa;
 
 -- SELECT * FROM viewListagemServidores WHERE idEmpresa = 1;
-
--- #---------------VIEWS ANÁLISES---------------------
--- -- DESENVOLVER IDEALIZAÇÃO DE VIEWS PARA ANÁLISES DE DADOS, RELATÓRIOS E GRÁFICOS
-CREATE VIEW viewAnalise AS
-SELECT 
-    s.tagName AS nomeServidor, 
-    s.SO AS sistemaOperacional, 
-    e.razaoSocial AS empresa, 
-    ed.pais, 
-    ed.estado, 
-    c.componente, 
-    c.numeracao, 
-    c.modelo, 
-    cfg.descricao, 
-    cm.dadoCaptura AS valorMonitorado, 
-    cfg.limiteAtencao, 
-    cfg.limiteCritico, 
-    IF(MAX(a.idAlerta) IS NOT NULL, 'Sim', 'Não') AS gerouAlerta, 
-    cm.dataHora, 
-    JSON_ARRAYAGG(
-        JSON_OBJECT(
-            'usoCpu', p.usoCpu,
-           'usoGpu', p.usoGpu,
-            'usoRam', p.usoRam,
-           'nome', p.nomeProcesso
-         )
-     ) AS top5Processos 
- FROM Captura cm
- JOIN ConfiguracaoMonitoramento cfg ON cm.fkConfiguracaoMonitoramento = cfg.idConfiguracaoMonitoramento
- JOIN Componente c ON cfg.fkComponente = c.idComponente
-JOIN Servidor s ON c.fkServidor = s.idServidor
- JOIN Empresa e ON s.fkEmpresa = e.idEmpresa
- JOIN Endereco ed ON s.fkEndereco = ed.idEndereco
- LEFT JOIN Alerta a ON a.fkConfiguracaoMonitoramento = cfg.idConfiguracaoMonitoramento AND a.dataHora = cm.dataHora
- LEFT JOIN (
-     SELECT 
-         pr.idProcesso,
-         pr.fkServidor,
-         pr.nomeProcesso,
-         pr.usoCpu,
-         pr.usoRam,
-         pr.usoGpu,
-         RANK() OVER (PARTITION BY pr.fkServidor ORDER BY pr.usoCpu DESC) AS rank_process
-     FROM Processo pr
- ) p ON p.fkServidor = s.idServidor AND p.rank_process <= 5
- GROUP BY cm.idCaptura;
