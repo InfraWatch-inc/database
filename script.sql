@@ -126,7 +126,8 @@ INSERT INTO Colaborador (nome, email, documento, tipoDocumento, senha, fkEmpresa
 
 INSERT INTO Servidor (tagName, tipo, uuidPlacaMae, idInstancia, SO, fkEmpresa, fkEndereco) VALUES
 ('SRV-001', 'fisico', '1234-5678-9101', 'inst-001', 'Linux', 1, 1),
-('SRV-002', 'nuvem', 'NBQ5911005111817C8MX00', 'inst-002', 'Windows', 1, 2);
+('SRV-002', 'nuvem', 'NBQ5911005111817C8MX00', 'inst-002', 'Windows', 1, 2),
+('SRV-003', 'nuvem', '123490EN400015', 'inst-003', 'Windows', 1,2);
 
 INSERT INTO Componente (fkServidor, componente, marca, numeracao, modelo) VALUES
 (1, 'CPU', 'Intel', 1, 'i7-9700K'),
@@ -138,7 +139,11 @@ INSERT INTO Componente (fkServidor, componente, marca, numeracao, modelo) VALUES
 (2, 'RAM', 'Husky', 1, 'DDR4 16GB'),
 (2, 'HD', 'Seagate', 1, '1TB'),
 (2, 'GPU', 'NVIDIA', 1, 'GTX 1050'),
-(2, 'Disco', 'Adata', 2, 'SSD 500GB');
+(2, 'Disco', 'Adata', 2, 'SSD 500GB'),
+(3, 'CPU', 'Intel', 1, 'i5-1235U'),
+(3, 'RAM', 'Samsung', 1, 'DDR4 4GB'),
+(3, 'HD', 'Samsung', 1, ' MZVL4256HBJD-00B');
+
 
 INSERT INTO ConfiguracaoMonitoramento (unidadeMedida, descricao, fkComponente, limiteAtencao, limiteCritico, funcaoPython) VALUES
 ('%', 'Uso', 1, 80.0, 95.0, 'psutil.cpu_percent()'),
@@ -167,7 +172,13 @@ INSERT INTO ConfiguracaoMonitoramento (unidadeMedida, descricao, fkComponente, l
 ('Porcentagem', 'Uso da GPU', 4, 70.0, 90.0, 'round(GPUtil.getGPUs()[numeracao - 1].load * 100, 2)'),
 ('Celsius', 'Temperatura da GPU', 4, 60.0, 90.0, 'GPUtil.getGPUs()[numeracao -1].temperature'),
 ('Porcentagem', 'Uso do Disco', 5, 80.0, 95.0, 'psutil.disk_usage("/").percent'),
-('Byte', 'Uso do Disco', 5, 500000000000, 1000000000000, 'psutil.disk_usage("/").used');
+('Byte', 'Uso do Disco', 5, 500000000000, 1000000000000, 'psutil.disk_usage("/").used'),
+('%', 'Uso', 11, 80.0, 95.0, 'psutil.cpu_percent()'),
+('MHz', 'Frequência', 11, 2000.0, 4000.0, 'psutil.cpu_freq().current'),
+('%', 'Uso', 12, 75.0, 90.0, 'psutil.virtual_memory().percent'),
+('Byte', 'Uso Byte', 12, 8000000000, 16000000000, 'psutil.virtual_memory().used'),
+('%', 'Uso Porcentagem', 13, 85.0, 95.0, 'psutil.disk_usage("/").percent'),
+('Byte', 'Uso Byte', 13, 500000000000, 1000000000000, 'psutil.disk_usage("/").used');
 
 #---------------VIEWS SISTEMA---------------------
 -- CREATE OR REPLACE VIEW `viewPrimeiroInsights` AS
@@ -274,8 +285,9 @@ INSERT INTO ConfiguracaoMonitoramento (unidadeMedida, descricao, fkComponente, l
 
 CREATE OR REPLACE VIEW `viewGetServidor` AS
 SELECT Componente.componente, 
-        Componente.numeracao, 
-        ConfiguracaoMonitoramento.descricao, 
+        Componente.numeracao,
+        ConfiguracaoMonitoramento.unidadeMedida,
+        ConfiguracaoMonitoramento.descricao,
         ConfiguracaoMonitoramento.funcaoPython, 
         ConfiguracaoMonitoramento.idConfiguracaoMonitoramento, 
         Servidor.idServidor, 
@@ -291,26 +303,19 @@ ON ConfiguracaoMonitoramento.fkComponente = Componente.idComponente
 JOIN Empresa
 ON idEmpresa = fkEmpresa;
 
--- SELECT * FROM viewGetServidor WHERE uuidPlacaMae = 'NBQ5911005111817C8MX00';
+SELECT * FROM viewGetServidor WHERE uuidPlacaMae = '123490EN400015';
 
--- CREATE OR REPLACE VIEW `viewListagemServidores` AS
--- SELECT idServidor as id, tagName as nome, idInstancia, idEmpresa, 
--- 		(SELECT COUNT(numeracao) FROM Componente as cm
---         WHERE cm.componente = 'CPU' and fkServidor = idServidor) as qtdCpu, 
+CREATE OR REPLACE VIEW `viewListagemServidores` AS
+ SELECT idServidor as id, tagName as nome, idInstancia, idEmpresa, 
+ 		(SELECT COUNT(numeracao) FROM Componente as cm
+         WHERE cm.componente = 'CPU' and fkServidor = idServidor) as qtdCpu, 
         
---         (SELECT COUNT(numeracao) FROM Componente as cm
---         WHERE cm.componente = 'GPU' and fkServidor = idServidor) as qtdGpu,
-        
---         (SELECT AVG(cp.dadoCaptura) FROM ConfiguracaoMonitoramento as cm
---         JOIN Componente as c ON fkComponente = idComponente
---         JOIN Captura as cp ON cm.idConfiguracaoMonitoramento = cp.idCaptura
---         WHERE c.componente = 'GPU' and cm.descricao = 'Temperatura') as tempGpu,
-        
---         (SELECT AVG(cp.dadoCaptura) FROM ConfiguracaoMonitoramento as cm
---         JOIN Componente as c ON fkComponente = idComponente
---         JOIN Captura as cp ON cm.idConfiguracaoMonitoramento = cp.idCaptura
---         WHERE c.componente = 'CPU' and cm.descricao = 'Temperatura') as tempCpu
--- FROM Servidor
--- JOIN Empresa ON idEmpresa = fkEmpresa;
+         (SELECT COUNT(numeracao) FROM Componente as cm
+         WHERE cm.componente = 'GPU' and fkServidor = idServidor) as qtdGpu
+         
+	FROM Servidor
+	JOIN Empresa ON idEmpresa = fkEmpresa;
 
--- SELECT * FROM viewListagemServidores WHERE idEmpresa = 1;
+SELECT * FROM viewListagemServidores WHERE idEmpresa = 1;
+
+select * from alerta;
