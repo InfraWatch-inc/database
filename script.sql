@@ -303,7 +303,7 @@ ON ConfiguracaoMonitoramento.fkComponente = Componente.idComponente
 JOIN Empresa
 ON idEmpresa = fkEmpresa;
 
-SELECT * FROM viewGetServidor WHERE uuidPlacaMae = '123490EN400015';
+-- SELECT * FROM viewGetServidor WHERE uuidPlacaMae = '123490EN400015';
 
 CREATE OR REPLACE VIEW `viewListagemServidores` AS
  SELECT idServidor as id, tagName as nome, idInstancia, idEmpresa, 
@@ -316,6 +316,4 @@ CREATE OR REPLACE VIEW `viewListagemServidores` AS
 	FROM Servidor
 	JOIN Empresa ON idEmpresa = fkEmpresa;
 
-SELECT * FROM viewListagemServidores WHERE idEmpresa = 1;
-
-select * from alerta;
+-- SELECT * FROM viewListagemServidores WHERE idEmpresa = 1;
