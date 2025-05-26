@@ -125,60 +125,84 @@ INSERT INTO Colaborador (nome, email, documento, tipoDocumento, senha, fkEmpresa
 ('André Muller', 'andre.muller@email.com', '23456789012', 'CPF', 'senha456', 1, 'Analista de Dados', 2, 1);
 
 INSERT INTO Servidor (tagName, tipo, uuidPlacaMae, idInstancia, SO, fkEmpresa, fkEndereco) VALUES
-('SRV-001', 'fisico', '1234-5678-9101', 'inst-001', 'Linux', 1, 1),
-('SRV-002', 'nuvem', 'NBQ5911005111817C8MX00', 'inst-002', 'Windows', 1, 2),
-('SRV-003', 'nuvem', '123490EN400015', 'inst-003', 'Windows', 1,2);
+('Rogirg', 'fisico', '1234-5678-9101', 'inst-001', 'Windows', 1, 1), -- Grigor
+('Reinar', 'fisico', 'NBQ5911005111817C8MX00', NULL, 'Windows', 1, 1), -- Ranier Windows 
+('Oiak', 'fisico', '', NULL, '', 1,2), -- KAIO
+('Leugim', 'fisico', '', NULL, '', 1,2), -- Miguel
+('Notlad', 'fisico', '', NULL, '', 1,2), -- Ranier Linux
+('Airotiv', 'fisico', '', NULL, '', 1,2); -- Vitoria
 
 INSERT INTO Componente (fkServidor, componente, marca, numeracao, modelo) VALUES
-(1, 'CPU', 'Intel', 1, 'i7-9700K'),
-(1, 'RAM', 'Corsair', 1, 'Vengeance 16GB'),
-(1, 'HD', 'Seagate', 1, '1TB'),
-(1, 'GPU', 'NVIDIA', 1, 'RTX 3080'),
-(1, 'Disco', 'Samsung', 2, 'SSD 1TB'),
-(2, 'CPU', 'Intel', 1, 'i5-9700K'),
-(2, 'RAM', 'Husky', 1, 'DDR4 16GB'),
-(2, 'HD', 'Seagate', 1, '1TB'),
-(2, 'GPU', 'NVIDIA', 1, 'GTX 1050'),
-(2, 'Disco', 'Adata', 2, 'SSD 500GB'),
-(3, 'CPU', 'Intel', 1, 'i5-1235U'),
-(3, 'RAM', 'Samsung', 1, 'DDR4 4GB'),
-(3, 'HD', 'Samsung', 1, ' MZVL4256HBJD-00B');
+-- Grigor
+(1, 'CPU', '', 1, ''), -- 1
+(1, 'RAM', '', 1, ''), -- 2
+(1, 'HD', '', 1, ''), -- 3
+
+-- Ranier Windows
+(2, 'CPU', 'Intel', 1, 'i5-9700K'), -- 4
+(2, 'RAM', 'Husky', 1, 'DDR4 16GB'), -- 5
+(2, 'HD', 'Adata', 1, 'SSD 500 GB'), -- 6
+(2, 'GPU', 'NVIDIA', 1, 'GTX 1050'), -- 7
+
+-- Kaio
+(3, 'CPU', '', 1, ''), -- 8
+(3, 'RAM', '', 1, ''), -- 9
+(3, 'HD', '', 1, ''), -- 10
+
+-- Miguel
+(4, 'CPU', '', 1, ''), -- 11
+(4, 'RAM', '', 1, ''), -- 12
+(4, 'HD', '', 1, ''), -- 13
+
+-- Ranier Linux
+(5, 'CPU', 'Intel', 1, 'i5-1235U'), -- 14
+(5, 'RAM', 'Adata', 1, 'DDR4 16GB'), -- 15
+(5, 'HD', 'Adata', 1, 'SSD 512GB'), -- 16
+
+-- Vitória
+(6, 'CPU', '', 1, ''), -- 17
+(6, 'RAM', '', 1, ''), -- 18
+(6, 'HD', '', 1, ''); -- 19
+
 
 
 INSERT INTO ConfiguracaoMonitoramento (unidadeMedida, descricao, fkComponente, limiteAtencao, limiteCritico, funcaoPython) VALUES
-('%', 'Uso', 1, 80.0, 95.0, 'psutil.cpu_percent()'),
-('MHz', 'Frequência', 1, 2000.0, 4000.0, 'psutil.cpu_freq().current'),
-('%', 'Uso', 2, 75.0, 90.0, 'psutil.virtual_memory().percent'),
-('Byte', 'Uso Byte', 2, 8000000000, 16000000000, 'psutil.virtual_memory().used'),
-('%', 'Uso Porcentagem', 3, 85.0, 95.0, 'psutil.disk_usage("/").percent'),
-('%', 'Uso Porcentagem', 4, 70.0, 90.0, 'round(GPUtil.getGPUs()[numeracao - 1].load * 100, 2)'),
-('ºC', 'Temperatura', 4, 60.0, 90.0, 'GPUtil.getGPUs()[numeracao -1].temperature'),
-('%', 'Uso Porcentagem', 5, 80.0, 95.0, 'psutil.disk_usage("/").percent'),
-('Byte', 'Uso Byte', 5, 500000000000, 1000000000000, 'psutil.disk_usage("/").used'),
-('%', 'Uso Porcentagem', 6, 80.0, 95.0, 'psutil.cpu_percent()'),
-('MHz', 'Frequência', 6, 2000.0, 4000.0, 'psutil.cpu_freq().current'),
-('%', 'Uso Porcentagem', 7, 75.0, 90.0, 'psutil.virtual_memory().percent'),
-('Byte', 'Uso Byte', 7, 8000000000, 16000000000, 'psutil.virtual_memory().used'),
-('%', 'Uso Porcentagem', 8, 85.0, 95.0, 'psutil.disk_usage("/").percent'),
-('%', 'Uso Porcentagem', 9, 70.0, 90.0, 'round(GPUtil.getGPUs()[numeracao - 1].load * 100, 2)'),
-('ºC', 'Temperatura', 9, 60.0, 90.0, 'GPUtil.getGPUs()[numeracao -1].temperature'),
-('%', 'Uso Porcentagem', 10, 80.0, 95.0, 'psutil.disk_usage("/").percent'),
-('Byte', 'Uso Byte', 10, 500000000000, 1000000000000, 'psutil.disk_usage("/").used'),
-('Porcentagem', 'Uso da CPU', 1, 80.0, 95.0, 'psutil.cpu_percent()'),
-('MHz', 'Frequência da CPU', 1, 2000.0, 4000.0, 'psutil.cpu_freq().current'),
-('Porcentagem', 'Uso da Memória RAM', 2, 75.0, 90.0, 'psutil.virtual_memory().percent'),
-('Byte', 'Uso da Memória RAM', 2, 8000000000, 16000000000, 'psutil.virtual_memory().used'),
-('Porcentagem', 'Uso do HD', 3, 85.0, 95.0, 'psutil.disk_usage("/").percent'),
-('Porcentagem', 'Uso da GPU', 4, 70.0, 90.0, 'round(GPUtil.getGPUs()[numeracao - 1].load * 100, 2)'),
-('Celsius', 'Temperatura da GPU', 4, 60.0, 90.0, 'GPUtil.getGPUs()[numeracao -1].temperature'),
-('Porcentagem', 'Uso do Disco', 5, 80.0, 95.0, 'psutil.disk_usage("/").percent'),
-('Byte', 'Uso do Disco', 5, 500000000000, 1000000000000, 'psutil.disk_usage("/").used'),
-('%', 'Uso', 11, 80.0, 95.0, 'psutil.cpu_percent()'),
-('MHz', 'Frequência', 11, 2000.0, 4000.0, 'psutil.cpu_freq().current'),
-('%', 'Uso', 12, 75.0, 90.0, 'psutil.virtual_memory().percent'),
-('Byte', 'Uso Byte', 12, 8000000000, 16000000000, 'psutil.virtual_memory().used'),
-('%', 'Uso Porcentagem', 13, 85.0, 95.0, 'psutil.disk_usage("/").percent'),
-('Byte', 'Uso Byte', 13, 500000000000, 1000000000000, 'psutil.disk_usage("/").used');
+-- Grigor
+(),
+(),
+(),
+(),
+
+-- Ranier Windows
+('%', 'Uso Porcentagem', 4, 80.0, 95.0, 'psutil.cpu_percent()'), -- Uso % CPU
+('%', 'Uso Porcentagem', 6, 85.0, 95.0, 'psutil.disk_usage("/").percent'), -- Uso % HD
+('%', 'Uso Porcentagem', 7, 70.0, 90.0, 'round(GPUtil.getGPUs()[numeracao - 1].load * 100, 2)'), -- Uso % GPU
+('ºC', 'Temperatura', 7, 60.0, 90.0, 'GPUtil.getGPUs()[numeracao -1].temperature'), -- Temp GPU
+('%', 'Uso Porcentagem', 5, 80.0, 95.0, 'psutil.virtual_memory().percent'), -- Uso % RAM
+
+-- Kaio
+(),
+(),
+(),
+(),
+
+-- Miguel
+(),
+(),
+(),
+(),
+
+-- Ranier Linux
+('%', 'Uso Porcentagem', 4, 80.0, 95.0, 'psutil.cpu_percent()'), -- Uso % CPU
+('%', 'Uso Porcentagem', 6, 85.0, 95.0, 'psutil.disk_usage("/").percent'), -- Uso % HD
+('ºC', 'Temperatura', 7, 60.0, 90.0, 'psutil.sensors_temperatures().get("coretemp", [])[numeracao - 1].current'), -- Temp CPU
+('%', 'Uso Porcentagem', 5, 80.0, 95.0, 'psutil.virtual_memory().percent'), -- Uso % RAM
+
+-- Vitoria
+(),
+(),
+(),
+();
 
 #---------------VIEWS SISTEMA---------------------
 -- CREATE OR REPLACE VIEW `viewPrimeiroInsights` AS
