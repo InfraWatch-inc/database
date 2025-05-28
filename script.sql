@@ -127,9 +127,9 @@ INSERT INTO Colaborador (nome, email, documento, tipoDocumento, senha, fkEmpresa
 INSERT INTO Servidor (tagName, tipo, uuidPlacaMae, idInstancia, SO, fkEmpresa, fkEndereco) VALUES
 ('Rogirg', 'fisico', '1234-5678-9101', 'inst-001', 'Windows', 1, 1), -- Grigor
 ('Reinar', 'fisico', 'NBQ5911005111817C8MX00', NULL, 'Windows', 1, 1), -- Ranier Windows 
-('Oiak', 'fisico', '', NULL, '', 1,2), -- KAIO
+('Oiak', 'fisico', '', 'NBHMY1100D0410065B9Z00', 'Windows', 1,1), -- KAIO
 ('Leugim', 'fisico', 'S937NBB6000AHYMB', NULL, 'Windows', 1,1), -- Miguel
-('Notlad', 'fisico', '', NULL, '', 1,2), -- Ranier Linux
+('Notlad', 'fisico', '', NULL, '', 1,1), -- Ranier Linux
 ('Airotiv', 'fisico', '', NULL, '', 1,2); -- Vitoria
 
 INSERT INTO Componente (fkServidor, componente, marca, numeracao, modelo) VALUES
@@ -145,24 +145,25 @@ INSERT INTO Componente (fkServidor, componente, marca, numeracao, modelo) VALUES
 (2, 'GPU', 'NVIDIA', 1, 'GTX 1050'), -- 7
 
 -- Kaio
-(3, 'CPU', '', 1, ''), -- 8
-(3, 'RAM', '', 1, ''), -- 9
-(3, 'HD', '', 1, ''), -- 10
+(3, 'CPU', 'Intel', 1, 'Intel(R) Core(TM) i5-10210U CPU @ 1.60GHz'), -- 8
+(3, 'RAM', 'Adata', 1, 'DDR4 16GB'), -- 9
+(3, 'HD', 'Adata', 1, 'KINGSTON RBUSNS8154P3512GJ1'), -- 10
+(3, 'GPU', 'NVIDIA', 1, 'GeForce MX250'), -- 11
 
 -- Miguel
-(4, 'CPU', 'Intel', 1, 'i5-1235U'), -- 11
-(4, 'RAM', 'Adata', 1, 'DDR4 16GB'), -- 12
-(4, 'HD', 'Adata', 1, 'SSD 500 GB'), -- 13
+(4, 'CPU', 'Intel', 1, 'i5-1235U'), -- 12
+(4, 'RAM', 'Adata', 1, 'DDR4 16GB'), -- 13
+(4, 'HD', 'Adata', 1, 'SSD 500 GB'), -- 14
 
 -- Ranier Linux
-(5, 'CPU', 'Intel', 1, 'i5-1235U'), -- 14
-(5, 'RAM', 'Adata', 1, 'DDR4 16GB'), -- 15
-(5, 'HD', 'Adata', 1, 'SSD 512GB'), -- 16
+(5, 'CPU', 'Intel', 1, 'i5-1235U'), -- 15
+(5, 'RAM', 'Adata', 1, 'DDR4 16GB'), -- 16
+(5, 'HD', 'Adata', 1, 'SSD 512GB'), -- 17
 
 -- Vitória
-(6, 'CPU', '', 1, ''), -- 17
-(6, 'RAM', '', 1, ''), -- 18
-(6, 'HD', '', 1, ''); -- 19
+(6, 'CPU', '', 1, ''), -- 18
+(6, 'RAM', '', 1, ''), -- 19
+(6, 'HD', '', 1, ''); -- 20
 
 
 
@@ -173,11 +174,7 @@ INSERT INTO ConfiguracaoMonitoramento (unidadeMedida, descricao, fkComponente, l
 ('%', 'Uso', 12, 75.0, 90.0, 'psutil.virtual_memory().percent'), -- Uso % RAM
 ('Byte', 'Uso Byte', 12, 8000000000, 16000000000, 'psutil.virtual_memory().used'), -- Uso Byte RAM
 ('%', 'Uso Porcentagem', 13, 85.0, 95.0, 'psutil.disk_usage("/").percent'), -- Uso % HD
-('Byte', 'Uso Byte', 13, 500000000000, 1000000000000, 'psutil.disk_usage("/").used'); -- Uso Byte HD
-(),
-(),
-(),
-(),
+('Byte', 'Uso Byte', 13, 500000000000, 1000000000000, 'psutil.disk_usage("/").used'), -- Uso Byte HD
 
 -- Ranier Windows
 ('%', 'Uso Porcentagem', 4, 80.0, 95.0, 'psutil.cpu_percent()'), -- Uso % CPU
@@ -187,10 +184,11 @@ INSERT INTO ConfiguracaoMonitoramento (unidadeMedida, descricao, fkComponente, l
 ('%', 'Uso Porcentagem', 5, 80.0, 95.0, 'psutil.virtual_memory().percent'), -- Uso % RAM
 
 -- Kaio
-(),
-(),
-(),
-(),
+('%', 'Uso Porcentagem', 8, 80.0, 95.0, 'psutil.cpu_percent()'), -- Uso % CPU	
+('%', 'Uso Porcentagem', 10, 85.0, 95.0, 'psutil.disk_usage("/").percent'), -- Uso % HD
+('%', 'Uso Porcentagem', 11, 70.0, 90.0, 'round(GPUtil.getGPUs()[numeracao - 1].load * 100, 2)'), -- Uso % GPU
+('%', 'Uso Porcentagem', 9, 80.0, 95.0, 'psutil.virtual_memory().percent'), -- Uso % RAM
+
 
 -- Miguel
 ('%', 'Uso Porcentagem', 11, 80.0, 95.0, 'psutil.cpu_percent()'), -- Uso % CPU
@@ -347,3 +345,29 @@ CREATE OR REPLACE VIEW `viewListagemServidores` AS
 	JOIN Empresa ON idEmpresa = fkEmpresa;
 
 -- SELECT * FROM viewListagemServidores WHERE idEmpresa = 1;
+
+-- view Kaio
+CREATE OR REPLACE VIEW `viewGetInformacoesAlertas` AS
+SELECT Empresa.idEmpresa AS idEmpresa,
+Alerta.DataHora,
+DATE_FORMAT(Alerta.DataHora, '%b') AS nomeMes,
+Componente.Componente,
+Alerta.nivel,
+Componente.marca,
+  CASE
+    WHEN HOUR(Alerta.dataHora) BETWEEN 6 AND 11 THEN 'Manhã'
+    WHEN HOUR(Alerta.dataHora) BETWEEN 12 AND 17 THEN 'Tarde'
+    ELSE 'Noite'
+  END AS periodoDia 
+  FROM Alerta
+        JOIN ConfiguracaoMonitoramento ON fkConfiguracaoMonitoramento = idConfiguracaoMonitoramento
+        JOIN Componente ON fkComponente = idComponente 
+        JOIN Servidor ON fkServidor = idServidor
+        JOIN Empresa ON fkEmpresa = idEmpresa 
+        WHERE
+        Componente.componente IN  ('CPU', 'GPU') 
+        GROUP BY Empresa.idEmpresa, Alerta.dataHora, Componente.componente, Nivel, Componente.marca
+        ORDER BY   Alerta.dataHora DESC
+       ;
+
+-- SELECT * FROM viewGetInformacoesAlertas WHERE idEmpresa = 1 AND DataHora >= DATE_SUB(NOW(), INTERVAL 3 MONTH);
