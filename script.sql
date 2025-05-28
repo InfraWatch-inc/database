@@ -127,7 +127,7 @@ INSERT INTO Colaborador (nome, email, documento, tipoDocumento, senha, fkEmpresa
 INSERT INTO Servidor (tagName, tipo, uuidPlacaMae, idInstancia, SO, fkEmpresa, fkEndereco) VALUES
 ('Rogirg', 'fisico', '', NULL, 'Windows', 1, 1), -- Grigor
 ('Reinar', 'fisico', 'NBQ5911005111817C8MX00', NULL, 'Windows', 1, 1), -- Ranier Windows 
-('Oiak', 'fisico', '', 'NBHMY1100D0410065B9Z00', 'Windows', 1,1), -- KAIO
+('Oiak', 'fisico', 'NBHMY1100D0410065B9Z00', NULL, 'Windows', 1,1), -- KAIO
 ('Leugim', 'fisico', 'S937NBB6000AHYMB', NULL, 'Windows', 1,1), -- Miguel
 ('Notlad', 'fisico', '4c4c4544-005a-5910-8042-b4c04f543434', NULL, 'Linux', 1,1), -- Ranier Linux
 ('Airotiv', 'fisico', '73D90500-5BDB-11E3-89FC-3C07716E634A', NULL, 'Windows', 1,1); -- Vitoria
