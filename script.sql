@@ -130,7 +130,7 @@ INSERT INTO Servidor (tagName, tipo, uuidPlacaMae, idInstancia, SO, fkEmpresa, f
 ('Oiak', 'fisico', '', 'NBHMY1100D0410065B9Z00', 'Windows', 1,1), -- KAIO
 ('Leugim', 'fisico', 'S937NBB6000AHYMB', NULL, 'Windows', 1,1), -- Miguel
 ('Notlad', 'fisico', '', NULL, '', 1,1), -- Ranier Linux
-('Airotiv', 'fisico', '', NULL, '', 1,2); -- Vitoria
+('Airotiv', 'fisico', '73D90500-5BDB-11E3-89FC-3C07716E634A', NULL, 'Windows', 1,1); -- Vitoria
 
 INSERT INTO Componente (fkServidor, componente, marca, numeracao, modelo) VALUES
 -- Grigor
@@ -161,9 +161,9 @@ INSERT INTO Componente (fkServidor, componente, marca, numeracao, modelo) VALUES
 (5, 'HD', 'Adata', 1, 'SSD 512GB'), -- 17
 
 -- Vitória
-(6, 'CPU', '', 1, ''), -- 18
-(6, 'RAM', '', 1, ''), -- 19
-(6, 'HD', '', 1, ''); -- 20
+(6, 'CPU', 'Intel', 1, 'i7-3537U'), -- 18
+(6, 'RAM', 'Adata', 1, 'DDR3 12GB'), -- 19
+(6, 'HD', 'KINGSTON', 1, 'SSD 500GB'); -- 20
 
 
 
@@ -203,10 +203,9 @@ INSERT INTO ConfiguracaoMonitoramento (unidadeMedida, descricao, fkComponente, l
 ('%', 'Uso Porcentagem', 5, 80.0, 95.0, 'psutil.virtual_memory().percent'), -- Uso % RAM
 
 -- Vitoria
-(),
-(),
-(),
-();
+('%', 'Uso Porcentagem', 18, 80.0, 95.0, 'psutil.cpu_percent()'), -- Uso % CPU
+('%', 'Uso Porcentagem',19, 80.0, 95.0, 'psutil.virtual_memory().percent'), -- Uso % RAM
+('%', 'Uso Porcentagem',20, 85.0, 95.0, 'psutil.disk_usage("/").percent'); -- Uso % HD
 
 #---------------VIEWS SISTEMA---------------------
 -- CREATE OR REPLACE VIEW `viewPrimeiroInsights` AS
