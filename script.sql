@@ -125,7 +125,7 @@ INSERT INTO Colaborador (nome, email, documento, tipoDocumento, senha, fkEmpresa
 ('André Muller', 'andre.muller@email.com', '23456789012', 'CPF', 'senha456', 1, 'Analista de Dados', 2, 1);
 
 INSERT INTO Servidor (tagName, tipo, uuidPlacaMae, idInstancia, SO, fkEmpresa, fkEndereco) VALUES
-('Rogirg', 'fisico', '', NULL, 'Windows', 1, 1), -- Grigor
+('Rogirg', 'fisico', '123490EN400015', NULL, 'Windows', 1, 1), -- Grigor
 ('Reinar', 'fisico', 'NBQ5911005111817C8MX00', NULL, 'Windows', 1, 1), -- Ranier Windows 
 ('Oiak', 'fisico', 'NBHMY1100D0410065B9Z00', NULL, 'Windows', 1,1), -- KAIO
 ('Leugim', 'fisico', 'S937NBB6000AHYMB', NULL, 'Windows', 1,1), -- Miguel
