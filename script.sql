@@ -125,11 +125,11 @@ INSERT INTO Colaborador (nome, email, documento, tipoDocumento, senha, fkEmpresa
 ('André Muller', 'andre.muller@email.com', '23456789012', 'CPF', 'senha456', 1, 'Analista de Dados', 2, 1);
 
 INSERT INTO Servidor (tagName, tipo, uuidPlacaMae, idInstancia, SO, fkEmpresa, fkEndereco) VALUES
-('Rogirg', 'fisico', '1234-5678-9101', 'inst-001', 'Windows', 1, 1), -- Grigor
+('Rogirg', 'fisico', '', NULL, 'Windows', 1, 1), -- Grigor
 ('Reinar', 'fisico', 'NBQ5911005111817C8MX00', NULL, 'Windows', 1, 1), -- Ranier Windows 
 ('Oiak', 'fisico', '', 'NBHMY1100D0410065B9Z00', 'Windows', 1,1), -- KAIO
 ('Leugim', 'fisico', 'S937NBB6000AHYMB', NULL, 'Windows', 1,1), -- Miguel
-('Notlad', 'fisico', '', NULL, '', 1,1), -- Ranier Linux
+('Notlad', 'fisico', '4c4c4544-005a-5910-8042-b4c04f543434', NULL, 'Linux', 1,1), -- Ranier Linux
 ('Airotiv', 'fisico', '73D90500-5BDB-11E3-89FC-3C07716E634A', NULL, 'Windows', 1,1); -- Vitoria
 
 INSERT INTO Componente (fkServidor, componente, marca, numeracao, modelo) VALUES
