@@ -102,9 +102,11 @@ CREATE TABLE IF NOT EXISTS Processo(
     usoCpu FLOAT NOT NULL,
     usoGpu FLOAT NOT NULL,
     usoRam FLOAT NOT NULL,
+    fkAlerta INT NULL,
     fkServidor INT NOT NULL,
     dataHora DATETIME NOT NULL,
-    FOREIGN KEY (fkServidor) REFERENCES Servidor(idServidor)
+    FOREIGN KEY (fkServidor) REFERENCES Servidor(idServidor),
+    FOREIGN KEY (fkAlerta) REFERENCES Alerta(idAlerta)
 );
 
 #---------------INSERTS---------------------
@@ -206,6 +208,11 @@ INSERT INTO ConfiguracaoMonitoramento (unidadeMedida, descricao, fkComponente, l
 ('%', 'Uso Porcentagem', 18, 80.0, 95.0, 'psutil.cpu_percent()'), -- Uso % CPU
 ('%', 'Uso Porcentagem',19, 80.0, 95.0, 'psutil.virtual_memory().percent'), -- Uso % RAM
 ('%', 'Uso Porcentagem',20, 85.0, 95.0, 'psutil.disk_usage("/").percent'); -- Uso % HD
+
+-- SIMULACAO DADOS DE ALERTAS 6 MESES 
+-- Qtd Alertas p/ dia 2 por - total 360 alertas 
+
+
 
 #---------------VIEWS SISTEMA---------------------
 -- CREATE OR REPLACE VIEW `viewPrimeiroInsights` AS
@@ -371,115 +378,119 @@ Componente.marca,
 
 -- Dados dashboard de processos
 DELIMITER $$
-CREATE PROCEDURE prDashboardProcessos(IN dataInicio DATETIME, IN dataFim DATETIME)
+CREATE PROCEDURE prDashboardKPIs(IN dataInicio DATETIME, IN dataFim DATETIME)
 BEGIN
-    DECLARE processoCritico VARCHAR(100);
-    DECLARE processoAtencao VARCHAR(100);
-    DECLARE componenteMaisUsado VARCHAR(50);
-    DECLARE periodoAtivo VARCHAR(10);
-    DECLARE alertasJson JSON;
-    DECLARE consumoJson JSON;
+    DECLARE processoCritico VARCHAR(100) DEFAULT '';
+    DECLARE processoAtencao VARCHAR(100) DEFAULT '';
+    DECLARE componenteMaisUsado VARCHAR(50) DEFAULT '';
+    DECLARE periodoAtivo VARCHAR(20) DEFAULT '';
 
-    -- Processo com mais alertas críticos
-    SELECT Processo.nome INTO processoCritico
-    FROM Alerta
-    JOIN Processo ON Alerta.fkProcesso = Processo.idProcesso
-    WHERE Alerta.nivel = 2 AND Alerta.DataHora BETWEEN dataInicio AND dataFim
-    GROUP BY Processo.nome
+    SELECT P.nomeProcesso INTO processoCritico
+    FROM Processo P
+    JOIN Alerta A ON P.fkAlerta = A.idAlerta
+    WHERE A.nivel = 2 AND A.DataHora BETWEEN dataInicio AND dataFim
+    GROUP BY P.nomeProcesso
     ORDER BY COUNT(*) DESC
     LIMIT 1;
 
-    -- Processo com mais alertas moderados
-    SELECT Processo.nome INTO processoAtencao
-    FROM Alerta
-    JOIN Processo ON Alerta.fkProcesso = Processo.idProcesso
-    WHERE Alerta.nivel = 1 AND Alerta.DataHora BETWEEN dataInicio AND dataFim
-    GROUP BY Processo.nome
+    SELECT P.nomeProcesso INTO processoAtencao
+    FROM Processo P
+    JOIN Alerta A ON P.fkAlerta = A.idAlerta
+    WHERE A.nivel = 1 AND A.DataHora BETWEEN dataInicio AND dataFim
+    GROUP BY P.nomeProcesso
     ORDER BY COUNT(*) DESC
     LIMIT 1;
 
-    -- Componente mais utilizado
-    SELECT Componente.componente INTO componenteMaisUsado
-    FROM Alerta
-    JOIN ConfiguracaoMonitoramento ON fkConfiguracaoMonitoramento = idConfiguracaoMonitoramento
-    JOIN Componente ON fkComponente = idComponente
-    WHERE Componente.componente IN ('CPU', 'GPU', 'RAM') AND Alerta.DataHora BETWEEN dataInicio AND dataFim
-    GROUP BY Componente.componente
+    SELECT C.componente INTO componenteMaisUsado
+    FROM Alerta A
+    JOIN ConfiguracaoMonitoramento CM ON A.fkConfiguracaoMonitoramento = CM.idConfiguracaoMonitoramento
+    JOIN Componente C ON CM.fkComponente = C.idComponente
+    WHERE C.componente IN ('CPU', 'GPU', 'RAM') AND A.DataHora BETWEEN dataInicio AND dataFim
+    GROUP BY C.componente
     ORDER BY COUNT(*) DESC
     LIMIT 1;
 
-    -- Período mais ativo
     SELECT periodo INTO periodoAtivo FROM (
         SELECT
             CASE
-                WHEN HOUR(DataHora) BETWEEN 6 AND 11 THEN 'Manhã'
-                WHEN HOUR(DataHora) BETWEEN 12 AND 17 THEN 'Tarde'
-                ELSE 'Noite'
+                WHEN HOUR(A.DataHora) BETWEEN 6 AND 11 THEN 'Manhã'
+                WHEN HOUR(A.DataHora) BETWEEN 12 AND 17 THEN 'Tarde'
+                WHEN HOUR(A.DataHora) BETWEEN 18 AND 23 THEN 'Noite'
+                ELSE 'Madrugada'
             END AS periodo,
             COUNT(*) AS total
-        FROM Alerta
-        WHERE Alerta.DataHora BETWEEN dataInicio AND dataFim
+        FROM Alerta A
+        WHERE A.DataHora BETWEEN dataInicio AND dataFim
         GROUP BY periodo
         ORDER BY total DESC
         LIMIT 1
     ) AS subquery;
 
-    -- Alertas por processo e nível em JSON
-    SELECT JSON_ARRAYAGG(
-        JSON_OBJECT(
-            'nome', Processo.nome,
-            'alertasCritico', SUM(CASE WHEN nivel = 2 THEN 1 ELSE 0 END),
-            'alertasAtencao', SUM(CASE WHEN nivel = 1 THEN 1 ELSE 0 END)
-        )
-    ) INTO alertasJson
-    FROM Alerta
-    JOIN Processo ON Alerta.fkProcesso = Processo.idProcesso
-    WHERE Alerta.DataHora BETWEEN dataInicio AND dataFim
-    GROUP BY Processo.nome;
-
-    -- Consumo por processo e por tipo em JSON
-    SELECT JSON_OBJECTAGG(tipo, JSON_ARRAYAGG(
-        JSON_OBJECT(
-            'nome', nome,
-            'capturaManha', manha,
-            'capturaTarde', tarde,
-            'capturaNoite', noite
-        )
-    )) INTO consumoJson
-    FROM (
-        SELECT 'cpu' AS tipo, nomeProcesso AS nome,
-            ROUND(AVG(CASE WHEN HOUR(dataHora) BETWEEN 6 AND 11 THEN usoCpu END), 0) AS manha,
-            ROUND(AVG(CASE WHEN HOUR(dataHora) BETWEEN 12 AND 17 THEN usoCpu END), 0) AS tarde,
-            ROUND(AVG(CASE WHEN HOUR(dataHora) BETWEEN 18 AND 23 THEN usoCpu END), 0) AS noite
-        FROM Processo
-        WHERE dataHora BETWEEN dataInicio AND dataFim
-        GROUP BY nomeProcesso
-        UNION ALL
-        SELECT 'gpu', nomeProcesso,
-            ROUND(AVG(CASE WHEN HOUR(dataHora) BETWEEN 6 AND 11 THEN usoGpu END), 0),
-            ROUND(AVG(CASE WHEN HOUR(dataHora) BETWEEN 12 AND 17 THEN usoGpu END), 0),
-            ROUND(AVG(CASE WHEN HOUR(dataHora) BETWEEN 18 AND 23 THEN usoGpu END), 0)
-        FROM Processo
-        WHERE dataHora BETWEEN dataInicio AND dataFim
-        GROUP BY nomeProcesso
-        UNION ALL
-        SELECT 'ram', nomeProcesso,
-            ROUND(AVG(CASE WHEN HOUR(dataHora) BETWEEN 6 AND 11 THEN usoRam END), 0),
-            ROUND(AVG(CASE WHEN HOUR(dataHora) BETWEEN 12 AND 17 THEN usoRam END), 0),
-            ROUND(AVG(CASE WHEN HOUR(dataHora) BETWEEN 18 AND 23 THEN usoRam END), 0)
-        FROM Processo
-        WHERE dataHora BETWEEN dataInicio AND dataFim
-        GROUP BY nomeProcesso
-    ) AS consumo;
-
-    -- Resultado final: objeto JSON
-    SELECT JSON_OBJECT(
-        'processoMaisCritico', processoCritico,
-        'processoMaisAtencao', processoAtencao,
-        'componenteMaisConsumido', componenteMaisUsado,
-        'periodoMaisAtivo', periodoAtivo,
-        'dadosProcessosAlertas', alertasJson,
-        'dadosProcessosConsumo', consumoJson
-    ) AS resultadoDashboard;
+    SELECT 
+        processoCritico AS processoMaisCritico,
+        processoAtencao AS processoMaisAtencao,
+        componenteMaisUsado AS componenteMaisConsumido,
+        periodoAtivo AS periodoMaisAtivo;
 END $$
 DELIMITER ;
+
+DELIMITER $$
+CREATE PROCEDURE prDashboardAlertasJSON1(IN dataInicio DATETIME, IN dataFim DATETIME)
+BEGIN
+    SELECT JSON_ARRAYAGG(
+        JSON_OBJECT(
+            'nome', nome,
+            'alertasCritico', IFNULL(alertasCritico, 0),
+            'alertasAtencao', IFNULL(alertasAtencao, 0)
+        )
+    ) AS dadosProcessosAlertas
+    FROM (
+        SELECT P.nomeProcesso AS nome,
+            SUM(CASE WHEN A.nivel = 2 THEN 1 ELSE 0 END) AS alertasCritico,
+            SUM(CASE WHEN A.nivel = 1 THEN 1 ELSE 0 END) AS alertasAtencao
+        FROM Processo P
+        JOIN Alerta A ON P.fkAlerta = A.idAlerta
+        WHERE A.DataHora BETWEEN dataInicio AND dataFim
+        GROUP BY P.nomeProcesso
+    ) AS subAlertas;
+END $$
+DELIMITER ;
+
+DELIMITER $$
+CREATE PROCEDURE prDashboardConsumoSimples(IN dataInicio DATETIME, IN dataFim DATETIME)
+BEGIN
+    SELECT tipo, nome, manha, tarde, noite
+    FROM (
+        SELECT 'cpu' AS tipo, nomeProcesso AS nome,
+            ROUND(AVG(CASE WHEN HOUR(dataHora) BETWEEN 6 AND 11 THEN usoCpu ELSE NULL END), 0) AS manha,
+            ROUND(AVG(CASE WHEN HOUR(dataHora) BETWEEN 12 AND 17 THEN usoCpu ELSE NULL END), 0) AS tarde,
+            ROUND(AVG(CASE WHEN HOUR(dataHora) BETWEEN 18 AND 23 THEN usoCpu ELSE NULL END), 0) AS noite
+        FROM Processo
+        WHERE dataHora BETWEEN dataInicio AND dataFim
+        GROUP BY nomeProcesso
+
+        UNION ALL
+
+        SELECT 'gpu', nomeProcesso,
+            ROUND(AVG(CASE WHEN HOUR(dataHora) BETWEEN 6 AND 11 THEN usoGpu ELSE NULL END), 0),
+            ROUND(AVG(CASE WHEN HOUR(dataHora) BETWEEN 12 AND 17 THEN usoGpu ELSE NULL END), 0),
+            ROUND(AVG(CASE WHEN HOUR(dataHora) BETWEEN 18 AND 23 THEN usoGpu ELSE NULL END), 0)
+        FROM Processo
+        WHERE dataHora BETWEEN dataInicio AND dataFim
+        GROUP BY nomeProcesso
+
+        UNION ALL
+
+        SELECT 'ram', nomeProcesso,
+            ROUND(AVG(CASE WHEN HOUR(dataHora) BETWEEN 6 AND 11 THEN usoRam ELSE NULL END), 0),
+            ROUND(AVG(CASE WHEN HOUR(dataHora) BETWEEN 12 AND 17 THEN usoRam ELSE NULL END), 0),
+            ROUND(AVG(CASE WHEN HOUR(dataHora) BETWEEN 18 AND 23 THEN usoRam ELSE NULL END), 0)
+        FROM Processo
+        WHERE dataHora BETWEEN dataInicio AND dataFim
+        GROUP BY nomeProcesso
+    ) AS consumo
+    ORDER BY tipo, nome;
+END $$
+DELIMITER ;
+
+CALL prDashboardConsumoSimples(DATE_SUB(NOW(), INTERVAL 6 MONTH), NOW());
