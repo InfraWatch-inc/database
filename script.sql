@@ -375,10 +375,9 @@ Componente.marca,
         GROUP BY Empresa.idEmpresa, Alerta.dataHora, Componente.componente, Nivel, Componente.marca
         ORDER BY   Alerta.dataHora DESC
        ;
-
 -- Dados dashboard de processos
-DELIMITER $$
-CREATE PROCEDURE prDashboardKPIs(IN dataInicio DATETIME, IN dataFim DATETIME)
+DELIMITER $$ 
+CREATE PROCEDURE prDashboardKPIs(IN dataInicio DATETIME, IN dataFim DATETIME, IN idEmpresa INT)
 BEGIN
     DECLARE processoCritico VARCHAR(100) DEFAULT '';
     DECLARE processoAtencao VARCHAR(100) DEFAULT '';
@@ -388,7 +387,9 @@ BEGIN
     SELECT P.nomeProcesso INTO processoCritico
     FROM Processo P
     JOIN Alerta A ON P.fkAlerta = A.idAlerta
+    JOIN Servidor S ON P.fkServidor = S.idServidor
     WHERE A.nivel = 2 AND A.DataHora BETWEEN dataInicio AND dataFim
+      AND S.fkEmpresa = idEmpresa
     GROUP BY P.nomeProcesso
     ORDER BY COUNT(*) DESC
     LIMIT 1;
@@ -396,7 +397,9 @@ BEGIN
     SELECT P.nomeProcesso INTO processoAtencao
     FROM Processo P
     JOIN Alerta A ON P.fkAlerta = A.idAlerta
+    JOIN Servidor S ON P.fkServidor = S.idServidor
     WHERE A.nivel = 1 AND A.DataHora BETWEEN dataInicio AND dataFim
+      AND S.fkEmpresa = idEmpresa
     GROUP BY P.nomeProcesso
     ORDER BY COUNT(*) DESC
     LIMIT 1;
@@ -405,7 +408,10 @@ BEGIN
     FROM Alerta A
     JOIN ConfiguracaoMonitoramento CM ON A.fkConfiguracaoMonitoramento = CM.idConfiguracaoMonitoramento
     JOIN Componente C ON CM.fkComponente = C.idComponente
-    WHERE C.componente IN ('CPU', 'GPU', 'RAM') AND A.DataHora BETWEEN dataInicio AND dataFim
+    JOIN Servidor S ON C.fkServidor = S.idServidor
+    WHERE C.componente IN ('CPU', 'GPU', 'RAM')
+      AND A.DataHora BETWEEN dataInicio AND dataFim
+      AND S.fkEmpresa = idEmpresa
     GROUP BY C.componente
     ORDER BY COUNT(*) DESC
     LIMIT 1;
@@ -420,7 +426,11 @@ BEGIN
             END AS periodo,
             COUNT(*) AS total
         FROM Alerta A
+        JOIN ConfiguracaoMonitoramento CM ON A.fkConfiguracaoMonitoramento = CM.idConfiguracaoMonitoramento
+        JOIN Componente C ON CM.fkComponente = C.idComponente
+        JOIN Servidor S ON C.fkServidor = S.idServidor
         WHERE A.DataHora BETWEEN dataInicio AND dataFim
+          AND S.fkEmpresa = idEmpresa
         GROUP BY periodo
         ORDER BY total DESC
         LIMIT 1
@@ -431,11 +441,11 @@ BEGIN
         processoAtencao AS processoMaisAtencao,
         componenteMaisUsado AS componenteMaisConsumido,
         periodoAtivo AS periodoMaisAtivo;
-END $$
+END $$ 
 DELIMITER ;
 
 DELIMITER $$
-CREATE PROCEDURE prDashboardAlertasJSON1(IN dataInicio DATETIME, IN dataFim DATETIME)
+CREATE PROCEDURE prDashboardAlertasJSON(IN dataInicio DATETIME, IN dataFim DATETIME, IN idEmpresa INT)
 BEGIN
     SELECT JSON_ARRAYAGG(
         JSON_OBJECT(
@@ -450,14 +460,16 @@ BEGIN
             SUM(CASE WHEN A.nivel = 1 THEN 1 ELSE 0 END) AS alertasAtencao
         FROM Processo P
         JOIN Alerta A ON P.fkAlerta = A.idAlerta
+        JOIN Servidor S ON P.fkServidor = S.idServidor
         WHERE A.DataHora BETWEEN dataInicio AND dataFim
+          AND S.fkEmpresa = idEmpresa
         GROUP BY P.nomeProcesso
     ) AS subAlertas;
-END $$
+END $$ 
 DELIMITER ;
 
 DELIMITER $$
-CREATE PROCEDURE prDashboardConsumoSimples(IN dataInicio DATETIME, IN dataFim DATETIME)
+CREATE PROCEDURE prDashboardConsumoSimples(IN dataInicio DATETIME, IN dataFim DATETIME, IN idEmpresa INT)
 BEGIN
     SELECT tipo, nome, manha, tarde, noite
     FROM (
@@ -465,8 +477,10 @@ BEGIN
             ROUND(AVG(CASE WHEN HOUR(dataHora) BETWEEN 6 AND 11 THEN usoCpu ELSE NULL END), 0) AS manha,
             ROUND(AVG(CASE WHEN HOUR(dataHora) BETWEEN 12 AND 17 THEN usoCpu ELSE NULL END), 0) AS tarde,
             ROUND(AVG(CASE WHEN HOUR(dataHora) BETWEEN 18 AND 23 THEN usoCpu ELSE NULL END), 0) AS noite
-        FROM Processo
-        WHERE dataHora BETWEEN dataInicio AND dataFim
+        FROM Processo P
+        JOIN Servidor S ON P.fkServidor = S.idServidor
+        WHERE P.dataHora BETWEEN dataInicio AND dataFim
+          AND S.fkEmpresa = idEmpresa
         GROUP BY nomeProcesso
 
         UNION ALL
@@ -475,8 +489,10 @@ BEGIN
             ROUND(AVG(CASE WHEN HOUR(dataHora) BETWEEN 6 AND 11 THEN usoGpu ELSE NULL END), 0),
             ROUND(AVG(CASE WHEN HOUR(dataHora) BETWEEN 12 AND 17 THEN usoGpu ELSE NULL END), 0),
             ROUND(AVG(CASE WHEN HOUR(dataHora) BETWEEN 18 AND 23 THEN usoGpu ELSE NULL END), 0)
-        FROM Processo
-        WHERE dataHora BETWEEN dataInicio AND dataFim
+        FROM Processo P
+        JOIN Servidor S ON P.fkServidor = S.idServidor
+        WHERE P.dataHora BETWEEN dataInicio AND dataFim
+          AND S.fkEmpresa = idEmpresa
         GROUP BY nomeProcesso
 
         UNION ALL
@@ -485,12 +501,15 @@ BEGIN
             ROUND(AVG(CASE WHEN HOUR(dataHora) BETWEEN 6 AND 11 THEN usoRam ELSE NULL END), 0),
             ROUND(AVG(CASE WHEN HOUR(dataHora) BETWEEN 12 AND 17 THEN usoRam ELSE NULL END), 0),
             ROUND(AVG(CASE WHEN HOUR(dataHora) BETWEEN 18 AND 23 THEN usoRam ELSE NULL END), 0)
-        FROM Processo
-        WHERE dataHora BETWEEN dataInicio AND dataFim
+        FROM Processo P
+        JOIN Servidor S ON P.fkServidor = S.idServidor
+        WHERE P.dataHora BETWEEN dataInicio AND dataFim
+          AND S.fkEmpresa = idEmpresa
         GROUP BY nomeProcesso
     ) AS consumo
     ORDER BY tipo, nome;
 END $$
 DELIMITER ;
 
-CALL prDashboardConsumoSimples(DATE_SUB(NOW(), INTERVAL 6 MONTH), NOW());
+
+CALL prDashboardConsumoSimples(DATE_SUB(NOW(), INTERVAL 6 MONTH), NOW(), 1);
