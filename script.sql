@@ -171,12 +171,12 @@ INSERT INTO Componente (fkServidor, componente, marca, numeracao, modelo) VALUES
 
 INSERT INTO ConfiguracaoMonitoramento (unidadeMedida, descricao, fkComponente, limiteAtencao, limiteCritico, funcaoPython) VALUES
 -- Grigor
-('%', 'Uso', 11, 80.0, 95.0, 'psutil.cpu_percent()'), -- Uso % CPU
-('MHz', 'Frequência', 11, 2000.0, 4000.0, 'psutil.cpu_freq().current'), -- Uso MHz CPU
-('%', 'Uso', 12, 75.0, 90.0, 'psutil.virtual_memory().percent'), -- Uso % RAM
-('Byte', 'Uso Byte', 12, 8000000000, 16000000000, 'psutil.virtual_memory().used'), -- Uso Byte RAM
-('%', 'Uso Porcentagem', 13, 85.0, 95.0, 'psutil.disk_usage("/").percent'), -- Uso % HD
-('Byte', 'Uso Byte', 13, 500000000000, 1000000000000, 'psutil.disk_usage("/").used'), -- Uso Byte HD
+('%', 'Uso', 1, 80.0, 95.0, 'psutil.cpu_percent()'), -- Uso % CPU
+('MHz', 'Frequência', 1, 2000.0, 4000.0, 'psutil.cpu_freq().current'), -- Uso MHz CPU
+('%', 'Uso', 2, 75.0, 90.0, 'psutil.virtual_memory().percent'), -- Uso % RAM
+('Byte', 'Uso Byte', 2, 8000000000, 16000000000, 'psutil.virtual_memory().used'), -- Uso Byte RAM
+('%', 'Uso Porcentagem', 3, 85.0, 95.0, 'psutil.disk_usage("/").percent'), -- Uso % HD
+('Byte', 'Uso Byte', 3, 500000000000, 1000000000000, 'psutil.disk_usage("/").used'), -- Uso Byte HD
 
 -- Ranier Windows
 ('%', 'Uso Porcentagem', 4, 80.0, 95.0, 'psutil.cpu_percent()'), -- Uso % CPU
