@@ -508,3 +508,115 @@ DELIMITER ;
 
 
 CALL prDashboardConsumoSimples(DATE_SUB(NOW(), INTERVAL 6 MONTH), NOW(), 1);
+
+
+create function p() returns INTEGER DETERMINISTIC NO SQL return @p;
+
+#Alertas por mes de RAM (GRAFICO)
+
+
+CREATE OR REPLACE VIEW vw_alertas_ram_periodo AS
+SELECT 
+    DATE_FORMAT(a.dataHora, '%b') AS mes_formatado,
+    DATE_FORMAT(a.dataHora, '%Y-%m') AS mes_ordenacao,
+    CASE
+        WHEN HOUR(a.dataHora) BETWEEN 6 AND 11 THEN 'Manhã'
+        WHEN HOUR(a.dataHora) BETWEEN 12 AND 17 THEN 'Tarde'
+        ELSE 'Noite'
+    END AS periodo_dia,
+    CASE 
+        WHEN a.nivel = 1 THEN 'Moderado'
+        WHEN a.nivel = 2 THEN 'Critico'
+        ELSE 'Desconhecido'
+    END AS tipo_alerta,
+    COUNT(*) AS quantidade_alertas
+FROM Alerta a
+JOIN ConfiguracaoMonitoramento cm ON a.fkConfiguracaoMonitoramento = cm.idConfiguracaoMonitoramento
+JOIN Componente c ON cm.fkComponente = c.idComponente
+JOIN Servidor s ON c.fkServidor = s.idServidor
+JOIN Empresa e ON s.fkEmpresa = e.idEmpresa
+WHERE a.dataHora >= DATE_SUB(NOW(), INTERVAL 6 MONTH)
+  AND e.idEmpresa = p()
+  AND c.componente = 'RAM'
+GROUP BY 
+    mes_ordenacao,
+    mes_formatado,
+    periodo_dia,
+    tipo_alerta
+ORDER BY 
+    mes_ordenacao, 
+    FIELD(periodo_dia, 'Manhã', 'Tarde', 'Noite'),
+    tipo_alerta;
+
+
+#Alertas por mes de disco (GRAFICO)
+
+CREATE OR REPLACE VIEW vw_alertas_mensais_empresa AS
+SELECT 
+    DATE_FORMAT(DATE_FORMAT(a.dataHora, '%Y-%m-01'), '%b %Y') AS mes_formatado,
+    CASE 
+        WHEN a.nivel = 1 THEN 'Moderado'
+        WHEN a.nivel = 2 THEN 'Critico'
+        ELSE 'Desconhecido'
+    END AS tipo_alerta,
+    COUNT(*) AS quantidade_alertas
+FROM Alerta a
+JOIN ConfiguracaoMonitoramento cm ON a.fkConfiguracaoMonitoramento = cm.idConfiguracaoMonitoramento
+JOIN Componente c ON cm.fkComponente = c.idComponente
+JOIN Servidor s ON c.fkServidor = s.idServidor
+JOIN Empresa e ON s.fkEmpresa = e.idEmpresa
+WHERE a.dataHora >= DATE_SUB(NOW(), INTERVAL 6 MONTH)
+  AND e.idEmpresa = p()
+  AND c.componente = 'Disco'
+GROUP BY mes_formatado, tipo_alerta
+ORDER BY STR_TO_DATE(mes_formatado, '%b %Y');
+
+#KPI QTDALERTA RAM
+
+CREATE OR REPLACE VIEW qtdAlertaRAM AS
+SELECT 
+    MONTH(a.dataHora) AS mes_num,
+    MONTHNAME(a.dataHora) AS mes_nome,
+    CASE 
+        WHEN a.nivel = 1 THEN 'Moderado'
+        WHEN a.nivel = 2 THEN 'Critico'
+        ELSE 'Desconhecido'
+    END AS tipo_alerta,
+    COUNT(*) AS totalAlertasRAM
+FROM Alerta a
+JOIN ConfiguracaoMonitoramento cm ON a.fkConfiguracaoMonitoramento = cm.idConfiguracaoMonitoramento
+JOIN Componente c ON cm.fkComponente = c.idComponente
+JOIN Servidor s ON c.fkServidor = s.idServidor
+JOIN Empresa e ON s.fkEmpresa = e.idEmpresa
+WHERE 
+    a.dataHora >= DATE_SUB(NOW(), INTERVAL 6 MONTH)
+    AND e.idEmpresa = p()
+    AND c.componente = 'RAM'
+GROUP BY mes_num, mes_nome, tipo_alerta
+ORDER BY mes_num, tipo_alerta;
+
+
+SELECT * FROM (select @p:=1)parm, qtdAlertaRAM;
+SELECT * FROM (SELECT @p := 1) parm, vw_alertas_ram_periodo;
+
+#KPI QTDALERTA DISCO
+    
+CREATE OR REPLACE VIEW qtdAlertaDis AS
+SELECT MONTH(a.dataHora) AS mes_num, MONTHNAME(a.dataHora) AS mes_nome,
+    CASE 
+        WHEN a.nivel = 1 THEN 'Moderado'
+        WHEN a.nivel = 2 THEN 'Critico'
+        ELSE 'Desconhecido'
+    END AS tipo_alerta,
+    COUNT(*) AS totalAlertasDisc
+FROM Alerta a
+JOIN ConfiguracaoMonitoramento cm ON a.fkConfiguracaoMonitoramento = cm.idConfiguracaoMonitoramento
+JOIN Componente c ON cm.fkComponente = c.idComponente
+JOIN Servidor s ON c.fkServidor = s.idServidor
+JOIN Empresa e ON s.fkEmpresa = e.idEmpresa
+WHERE 
+    a.dataHora >= DATE_SUB(NOW(), INTERVAL 6 MONTH)
+    AND e.idEmpresa = p()
+    AND c.componente = 'Disco'
+GROUP BY mes_num, mes_nome, tipo_alerta
+ORDER BY mes_num, tipo_alerta;
