@@ -201,7 +201,7 @@ INSERT INTO ConfiguracaoMonitoramento (unidadeMedida, descricao, fkComponente, l
 -- Ranier Linux
 ('%', 'Uso Porcentagem', 4, 80.0, 95.0, 'psutil.cpu_percent()'), -- Uso % CPU
 ('%', 'Uso Porcentagem', 6, 85.0, 95.0, 'psutil.disk_usage("/").percent'), -- Uso % HD
-('ºC', 'Temperatura', 7, 60.0, 90.0, 'psutil.sensors_temperatures().get("coretemp", [])[numeracao - 1].current'), -- Temp CPU
+('ºC', 'Temperatura', 7, 60.0, 90.0, 'psutil.sensors_temperatures().get("coretemp",[])[numeracao-1].current'), -- Temp CPU
 ('%', 'Uso Porcentagem', 5, 80.0, 95.0, 'psutil.virtual_memory().percent'), -- Uso % RAM
 
 -- Vitoria
@@ -211,8 +211,6 @@ INSERT INTO ConfiguracaoMonitoramento (unidadeMedida, descricao, fkComponente, l
 
 -- SIMULACAO DADOS DE ALERTAS 6 MESES 
 -- Qtd Alertas p/ dia 2 por - total 360 alertas 
-
-
 
 #---------------VIEWS SISTEMA---------------------
 -- CREATE OR REPLACE VIEW `viewPrimeiroInsights` AS
