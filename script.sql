@@ -571,7 +571,7 @@ JOIN Servidor s ON c.fkServidor = s.idServidor
 JOIN Empresa e ON s.fkEmpresa = e.idEmpresa
 WHERE a.dataHora >= DATE_SUB(NOW(), INTERVAL 6 MONTH)
   AND e.idEmpresa = p()
-  AND c.componente = 'Disco'
+  AND c.componente in ('HD', 'SSD')
 GROUP BY mes_formatado, tipo_alerta
 ORDER BY STR_TO_DATE(mes_formatado, '%b %Y');
 
@@ -599,30 +599,6 @@ WHERE
     AND c.componente = 'RAM'
 GROUP BY mes_num, mes_nome, tipo_alerta
 ORDER BY mes_num, tipo_alerta;
-
-
-#KPI QTDALERTA DISCO
-    
-CREATE OR REPLACE VIEW qtdAlertaDis AS
-SELECT MONTH(a.dataHora) AS mes_num, MONTHNAME(a.dataHora) AS mes_nome,
-    CASE 
-        WHEN a.nivel = 1 THEN 'Moderado'
-        WHEN a.nivel = 2 THEN 'Critico'
-        ELSE 'Desconhecido'
-    END AS tipo_alerta,
-    COUNT(*) AS totalAlertasDisc
-FROM Alerta a
-JOIN ConfiguracaoMonitoramento cm ON a.fkConfiguracaoMonitoramento = cm.idConfiguracaoMonitoramento
-JOIN Componente c ON cm.fkComponente = c.idComponente
-JOIN Servidor s ON c.fkServidor = s.idServidor
-JOIN Empresa e ON s.fkEmpresa = e.idEmpresa
-WHERE 
-    a.dataHora >= DATE_SUB(NOW(), INTERVAL 6 MONTH)
-    AND e.idEmpresa = p()
-    AND c.componente = 'Disco'
-GROUP BY mes_num, mes_nome, tipo_alerta
-ORDER BY mes_num, tipo_alerta;
-
 
 INSERT INTO Alerta (nivel, dataHora, valor, fkConfiguracaoMonitoramento) VALUES
 (2, '2024-12-01 21:18:47', 118.23, 10),
