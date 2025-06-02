@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS Empresa (
     status VARCHAR(45) NOT NULL DEFAULT 'ativo', -- fala se a empresa ta ativa ou não
     telefone VARCHAR(15) NOT NULL,
     site VARCHAR(200) NOT NULL,
-    CONSTRAINT chkStatus CHECK (status IN ('ativo','ativo'))
+    CONSTRAINT chkStatus CHECK (status IN ('ativo','inativo'))
 );
 
 CREATE TABLE IF NOT EXISTS Endereco (
@@ -360,7 +360,7 @@ Componente.Componente,
 Alerta.nivel,
 Componente.marca,
   CASE
-    WHEN HOUR(Alerta.dataHora) BETWEEN 6 AND 11 THEN 'Manhã'
+    WHEN HOUR(Alerta.dataHora) BETWEEN 6 AND 11 THEN 'Manha'
     WHEN HOUR(Alerta.dataHora) BETWEEN 12 AND 17 THEN 'Tarde'
     ELSE 'Noite'
   END AS periodoDia 
@@ -420,7 +420,7 @@ BEGIN
     SELECT periodo INTO periodoAtivo FROM (
         SELECT
             CASE
-                WHEN HOUR(A.DataHora) BETWEEN 6 AND 11 THEN 'Manhã'
+                WHEN HOUR(A.DataHora) BETWEEN 6 AND 11 THEN 'Manha'
                 WHEN HOUR(A.DataHora) BETWEEN 12 AND 17 THEN 'Tarde'
                 WHEN HOUR(A.DataHora) BETWEEN 18 AND 23 THEN 'Noite'
                 ELSE 'Madrugada'
@@ -523,7 +523,7 @@ SELECT
     DATE_FORMAT(a.dataHora, '%b') AS mes_formatado,
     DATE_FORMAT(a.dataHora, '%Y-%m') AS mes_ordenacao,
     CASE
-        WHEN HOUR(a.dataHora) BETWEEN 6 AND 11 THEN 'Manhã'
+        WHEN HOUR(a.dataHora) BETWEEN 6 AND 11 THEN 'Manha'
         WHEN HOUR(a.dataHora) BETWEEN 12 AND 17 THEN 'Tarde'
         ELSE 'Noite'
     END AS periodo_dia,
@@ -548,7 +548,7 @@ GROUP BY
     tipo_alerta
 ORDER BY 
     mes_ordenacao, 
-    FIELD(periodo_dia, 'Manhã', 'Tarde', 'Noite'),
+    FIELD(periodo_dia, 'Manha', 'Tarde', 'Noite'),
     tipo_alerta;
 
 select * from (select @p:=1)parm, vw_alertas_ram_periodo;
