@@ -124,7 +124,8 @@ INSERT INTO Empresa (razaoSocial, numeroTin, telefone, site, fkEndereco) VALUES
 INSERT INTO Colaborador (nome, email, documento, tipoDocumento, senha, fkEmpresa, cargo, nivel, fkResponsavel) VALUES 
 ('Ana Moreira', 'ana.moreira@email.com', '34567890123', 'CPF', 'senha789', 1, 'COO', 3, null),
 ('Pedro Filho', 'pedro.filho@email.com', '12345678901', 'CPF', 'senha123', 1, 'Técnico de Manutenção', 1, 1),
-('Andre Muller', 'andre.muller@email.com', '23456789012', 'CPF', 'senha456', 1, 'Analista de Dados', 2, 1);
+('Andre Muller', 'andre.muller@email.com', '23456789012', 'CPF', 'senha456', 1, 'Analista de Dados', 2, 1),
+('Roberto Carlos', 'roberto.carlos@email.com', '23456789033', 'CPF', 'roberto', 1, 'DevOps', 4, NULL);
 
 INSERT INTO Servidor (tagName, tipo, uuidPlacaMae, idInstancia, SO, fkEmpresa, fkEndereco) VALUES
 ('Rogirg', 'fisico', '123490EN400015', NULL, 'Windows', 1, 1), -- Grigor
