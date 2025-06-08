@@ -44,7 +44,7 @@ CREATE TABLE IF NOT EXISTS Colaborador (
     nivel TINYINT NOT NULL,
     FOREIGN KEY (fkResponsavel) REFERENCES Colaborador(idColaborador),
     FOREIGN KEY (fkEmpresa) REFERENCES Empresa(idEmpresa),
-	CONSTRAINT chknivel CHECK (nivel IN (1, 2, 3))
+	CONSTRAINT chknivel CHECK (nivel IN (1, 2, 3, 4))
 );
 
 #-----------SERVIDORES------------
@@ -124,7 +124,8 @@ INSERT INTO Empresa (razaoSocial, numeroTin, telefone, site, fkEndereco) VALUES
 INSERT INTO Colaborador (nome, email, documento, tipoDocumento, senha, fkEmpresa, cargo, nivel, fkResponsavel) VALUES 
 ('Ana Moreira', 'ana.moreira@email.com', '34567890123', 'CPF', 'senha789', 1, 'COO', 3, null),
 ('Pedro Filho', 'pedro.filho@email.com', '12345678901', 'CPF', 'senha123', 1, 'Técnico de Manutenção', 1, 1),
-('André Muller', 'andre.muller@email.com', '23456789012', 'CPF', 'senha456', 1, 'Analista de Dados', 2, 1);
+('Andre Muller', 'andre.muller@email.com', '23456789012', 'CPF', 'senha456', 1, 'Analista de Dados', 2, 1),
+('Roberto Carlos', 'roberto.carlos@email.com', '23456789033', 'CPF', 'roberto123', 1, 'DevOps', 4, NULL);
 
 SELECT idColaborador, nome, email, nivel, fkEmpresa FROM Colaborador WHERE email = "pedro.filho@email.com" AND senha = "senha123";
 
@@ -362,7 +363,7 @@ Componente.Componente,
 Alerta.nivel,
 Componente.marca,
   CASE
-    WHEN HOUR(Alerta.dataHora) BETWEEN 6 AND 11 THEN 'Manhã'
+    WHEN HOUR(Alerta.dataHora) BETWEEN 6 AND 11 THEN 'Manha'
     WHEN HOUR(Alerta.dataHora) BETWEEN 12 AND 17 THEN 'Tarde'
     ELSE 'Noite'
   END AS periodoDia 
@@ -422,7 +423,7 @@ BEGIN
     SELECT periodo INTO periodoAtivo FROM (
         SELECT
             CASE
-                WHEN HOUR(A.DataHora) BETWEEN 6 AND 11 THEN 'Manhã'
+                WHEN HOUR(A.DataHora) BETWEEN 6 AND 11 THEN 'Manha'
                 WHEN HOUR(A.DataHora) BETWEEN 12 AND 17 THEN 'Tarde'
                 WHEN HOUR(A.DataHora) BETWEEN 18 AND 23 THEN 'Noite'
                 ELSE 'Madrugada'
@@ -525,7 +526,7 @@ SELECT
     DATE_FORMAT(a.dataHora, '%b') AS mes_formatado,
     DATE_FORMAT(a.dataHora, '%Y-%m') AS mes_ordenacao,
     CASE
-        WHEN HOUR(a.dataHora) BETWEEN 6 AND 11 THEN 'Manhã'
+        WHEN HOUR(a.dataHora) BETWEEN 6 AND 11 THEN 'Manha'
         WHEN HOUR(a.dataHora) BETWEEN 12 AND 17 THEN 'Tarde'
         ELSE 'Noite'
     END AS periodo_dia,
@@ -550,7 +551,7 @@ GROUP BY
     tipo_alerta
 ORDER BY 
     mes_ordenacao, 
-    FIELD(periodo_dia, 'Manhã', 'Tarde', 'Noite'),
+    FIELD(periodo_dia, 'Manha', 'Tarde', 'Noite'),
     tipo_alerta;
 
 -- select * from (select @p:=1)parm, vw_alertas_ram_periodo;
@@ -573,7 +574,7 @@ JOIN Servidor s ON c.fkServidor = s.idServidor
 JOIN Empresa e ON s.fkEmpresa = e.idEmpresa
 WHERE a.dataHora >= DATE_SUB(NOW(), INTERVAL 6 MONTH)
   AND e.idEmpresa = p()
-  AND c.componente = 'Disco'
+  AND c.componente in ('HD', 'SSD')
 GROUP BY mes_formatado, tipo_alerta
 ORDER BY STR_TO_DATE(mes_formatado, '%b %Y');
 
@@ -603,32 +604,9 @@ WHERE
 GROUP BY mes_num, mes_nome, tipo_alerta
 ORDER BY mes_num, tipo_alerta;
 
-
-#KPI QTDALERTA DISCO
-    
-CREATE OR REPLACE VIEW qtdAlertaDis AS
-SELECT MONTH(a.dataHora) AS mes_num, MONTHNAME(a.dataHora) AS mes_nome,
-    CASE 
-        WHEN a.nivel = 1 THEN 'Moderado'
-        WHEN a.nivel = 2 THEN 'Critico'
-        ELSE 'Desconhecido'
-    END AS tipo_alerta,
-    COUNT(*) AS totalAlertasDisc
-FROM Alerta a
-JOIN ConfiguracaoMonitoramento cm ON a.fkConfiguracaoMonitoramento = cm.idConfiguracaoMonitoramento
-JOIN Componente c ON cm.fkComponente = c.idComponente
-JOIN Servidor s ON c.fkServidor = s.idServidor
-JOIN Empresa e ON s.fkEmpresa = e.idEmpresa
-WHERE 
-    a.dataHora >= DATE_SUB(NOW(), INTERVAL 6 MONTH)
-    AND e.idEmpresa = p()
-    AND c.componente = 'Disco'
-GROUP BY mes_num, mes_nome, tipo_alerta
-ORDER BY mes_num, tipo_alerta;
-
-
 INSERT INTO Alerta (nivel, dataHora, valor, fkConfiguracaoMonitoramento) VALUES
 (2, '2024-12-01 21:18:47', 118.23, 10),
+(2, '2025-06-03 21:18:47', 91, 12),
 (2, '2024-12-02 02:10:47', 104.56, 13),
 (2, '2024-12-03 08:23:47', 101.75, 9),
 (2, '2024-12-03 04:34:47', 124.62, 7),
